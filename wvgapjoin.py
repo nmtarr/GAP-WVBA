@@ -1,11 +1,5 @@
-#Create Environment
-conda install -n wvspp python=3.7 pandas
-conda activate wvspp
-conda update -n base -c defaults conda
-python
 import os
 import pandas as pd
-
 
 atlas = 'C:\\Users\\jhpage\\Specieslists\\WVAtlasSPP.csv'
 gap = 'C:\\Users\\jhpage\\Specieslists\\Gap_birds_WV.csv'
