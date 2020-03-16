@@ -28,3 +28,16 @@ def download_GAP_range_CONUS2001v1(gap_id, toDir):
 
     # Return path to range file without extension
     return rng_zip.replace('.zip', '')
+
+
+def lc_crosswalker(systems, from, to):
+    """
+    Crosswalks a list of land cover classes from one classification to another.
+
+    Arguments
+    systems -- python list of system names
+    from -- classification system of systems list
+    to -- classification to crosswalk list to
+    """
+    #
+    return out_systems
