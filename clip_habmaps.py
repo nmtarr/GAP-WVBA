@@ -10,7 +10,7 @@ Description: Clips CONUS GAP habitat maps (summer) to the WV boundary.
 projDir = "P:/Proj6/GAP-WVBA/"
 CONUSDir = "P:/Proj3/USGap/Vert/Model/Output/CONUS/"
 dataDir = projDir + "Data/"
-clipDir = projDir + "habmaps/"
+clipDir = dataDir + "habmaps/"
 
 # Get a list of GAP species codes to process
 
