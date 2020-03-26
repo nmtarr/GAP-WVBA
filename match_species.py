@@ -5,7 +5,8 @@ pd.set_option('display.max_colwidth', 400)
 pd.set_option('display.max_rows', 400)
 pd.set_option('display.max_columns', 10)
 
-projDir = "P:/Proj6/GAP-WVBA/Data"
+#projDir = "P:/Proj6/GAP-WVBA/Data"
+projDir = "C:/Users/jhpage/Data/Specieslists/"
 atlas = projDir + "WVAtlasSPP.csv"
 gap = projDir + "Gap_birds_WV.csv"
 result = projDir + "Gap_birds_WV.csv"
