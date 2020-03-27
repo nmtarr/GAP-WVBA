@@ -23,6 +23,7 @@ clipDir = dataDir + 'habmaps'
 listDir = dataDir + 'Specieslists/WV_AtlasCodes.csv'
 wvBoundary = projDir + 'WV_GAPcover/2001/WVworkspace/wv_bound.shp'
 
+
 # Get a list of GAP species codes to process
 
 shapefile = fiona.open(wvBoundary)
