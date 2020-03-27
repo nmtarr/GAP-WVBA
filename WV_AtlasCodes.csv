@@ -1,0 +1,110 @@
+strScientificName_x,strUC,strCommonName,state_name,intHa,strScientificName_y,N_birds,N_points,Det_Rate
+Quiscalus quiscula,bcogrx,Common Grackle,West Virginia,2097972.36,Quiscalus quiscula,841,274,8.6
+Geothlypis trichas,bcoyex,Common Yellowthroat,West Virginia,4316256.27,Geothlypis trichas,734,545,17.1
+Troglodytes aedon,bhowrx,House Wren,West Virginia,859798.17,Troglodytes aedon,190,158,5.0
+Sitta canadensis,brbnux,Red-breasted Nuthatch,West Virginia,1959257.88,Sitta canadensis,65,61,1.9
+Vireo olivaceus,brevix,Red-eyed Vireo,West Virginia,5018043.51,Vireo olivaceus,3501,1965,61.8
+Hylocichla mustelina,bwothx,Wood Thrush,West Virginia,4561107.3,Hylocichla mustelina,1922,1234,38.8
+Icterus galbula,bbaorx,Baltimore Oriole,West Virginia,5567031.63,Icterus galbula,223,190,6.0
+Poecile atricapillus,bbcchx,Black-capped Chickadee,West Virginia,3396955.14,Poecile atricapillus,397,280,8.8
+Dendroica pensylvanica,bcswax,Chestnut-sided Warbler,West Virginia,306022.32,Setophaga pensylvanica,587,329,10.3
+Dumetella carolinensis,bgrcax,Gray Catbird,West Virginia,933744.06,Dumetella carolinensis,1000,686,21.6
+Wilsonia citrina,bhowax,Hooded Warbler,West Virginia,4540682.52,Setophaga citrina,698,522,16.4
+Oporornis formosus,bkewax,Kentucky Warbler,West Virginia,2810306.61,Geothlypis formosa,194,172,5.4
+Columba livia,bropix,Rock Pigeon,West Virginia,546233.67,Columba livia,179,30,0.9
+Agelaius phoeniceus,brwblx,Red-winged Blackbird,West Virginia,957717.09,Agelaius phoeniceus,2038,570,17.9
+Tachycineta bicolor,btresx,Tree Swallow,West Virginia,1804972.5,Tachycineta bicolor,234,130,4.1
+Icteria virens,bybchx,Yellow-breasted Chat,West Virginia,1272819.78,Icteria virens,298,258,8.1
+Vireo flavifrons,bytvix,Yellow-throated Vireo,West Virginia,871674.75,Vireo flavifrons,330,305,9.6
+Dendroica dominica,bytwax,Yellow-throated Warbler,West Virginia,43512.93,Setophaga dominica,296,276,8.7
+Empidonax virescens,bacflx,Acadian Flycatcher,West Virginia,4568792.67,Empidonax virescens,810,637,20.0
+Corvus brachyrhynchos,bamcrx,American Crow,West Virginia,2736310.5,Corvus brachyrhynchos,2755,1530,48.1
+Coccyzus erythropthalmus,bbbcux,Black-billed Cuckoo,West Virginia,329447.43,Coccyzus erythropthalmus,62,55,1.7
+Poecile carolinensis,bcachx,Carolina Chickadee,West Virginia,3978718.83,Poecile carolinensis,450,328,10.3
+Thryothorus ludovicianus,bcarwx,Carolina Wren,West Virginia,4590385.56,Thryothorus ludovicianus,1209,913,28.7
+Corvus corax,bcorax,Common Raven,West Virginia,2938864.14,Corvus corax,206,154,4.8
+Picoides pubescens,bdowox,Downy Woodpecker,West Virginia,5142898.08,Picoides pubescens,385,352,11.1
+Regulus satrapa,bgckix,Golden-crowned Kinglet,West Virginia,5167483.38,Regulus satrapa,61,57,1.8
+Icterus spurius,bororx,Orchard Oriole,West Virginia,1014899.76,Icterus spurius,123,111,3.5
+Dendroica discolor,bprawx,Prairie Warbler,West Virginia,1976253.84,Setophaga discolor,89,69,2.2
+Melanerpes carolinus,brbwox,Red-bellied Woodpecker,West Virginia,4699839.6,Melanerpes carolinus,727,625,19.6
+Melospiza melodia,bsospx,Song Sparrow,West Virginia,1269678.6,Melospiza melodia,1529,995,31.3
+Cathartes aura,btuvux,Turkey Vulture,West Virginia,5299161.66,Cathartes aura,196,75,2.4
+Aix sponsa,bwodux,Wood Duck,West Virginia,248536.98,Aix sponsa,97,40,1.3
+Sphyrapicus varius,bybsax,Yellow-bellied Sapsucker,West Virginia,1130638.68,Sphyrapicus varius,38,30,0.9
+Empidonax alnorum,balflx,Alder Flycatcher,West Virginia,465765.66,Empidonax alnorum,62,42,1.3
+Setophaga ruticilla,bamrex,American Redstart,West Virginia,4750705.26,Setophaga ruticilla,740,544,17.1
+Hirundo rustica,bbarsx,Barn Swallow,West Virginia,1198910.52,Hirundo rustica,667,239,7.5
+Toxostoma rufum,bbrthx,Brown Thrasher,West Virginia,449151.48,Toxostoma rufum,336,283,8.9
+Dendroica caerulescens,bbtbwx,Black-throated Blue Warbler,West Virginia,4568191.2,Setophaga caerulescens,139,111,3.5
+Dendroica virens,bbtnwx,Black-throated Green Warbler,West Virginia,3940488.27,Setophaga virens,569,390,12.3
+Buteo platypterus,bbwhax,Broad-winged Hawk,West Virginia,2334976.74,Buteo platypterus,33,31,1.0
+Dendroica cerulea,bcerwx,Cerulean Warbler,West Virginia,4235275.71,Setophaga cerulea,273,220,6.9
+Vermivora chrysoptera,bgwwax,Golden-winged Warbler,West Virginia,5648445.27,Vermivora chrysoptera,50,37,1.2
+Dendroica magnolia,bmawax,Magnolia Warbler,West Virginia,280560.51,Setophaga magnolia,186,131,4.1
+Zenaida macroura,bmodox,Mourning Dove,West Virginia,2616774.48,Zenaida macroura,1101,765,24.0
+Mimus polyglottos,bnomox,Northern Mockingbird,West Virginia,1628469.45,Mimus polyglottos,280,217,6.8
+Buteo lineatus,brshax,Red-shouldered Hawk,West Virginia,2854295.46,Buteo lineatus,83,73,2.3
+Catharus fuscescens,bveerx,Veery,West Virginia,441684.54,Catharus fuscescens,299,204,6.4
+Mniotilta varia,bbawwx,Black-and-White Warbler,West Virginia,4418881.47,Mniotilta varia,405,356,11.2
+Vermivora pinus,bbwwax,Blue-winged Warbler,West Virginia,215230.32,Vermivora cyanoptera,221,189,5.9
+Sialia sialis,beablx,Eastern Bluebird,West Virginia,2012973.39,Sialia sialis,438,311,9.8
+Sturnella magna,beamex,Eastern Meadowlark,West Virginia,883630.08,Sturnella magna,345,202,6.4
+Ardea herodias,bgbhex,Great Blue Heron,West Virginia,594569.97,Ardea herodias,43,35,1.1
+Carpodacus mexicanus,bhofix,House Finch,West Virginia,972929.34,Haemorhous mexicanus,103,47,1.5
+Passer domesticus,bhospx,House Sparrow,West Virginia,953945.37,Passer domesticus,314,97,3.0
+Charadrius vociferus,bkillx,Killdeer,West Virginia,932249.34,Charadrius vociferus,127,90,2.8
+Seiurus motacilla,blowax,Louisiana Waterthrush,West Virginia,89335.44,Parkesia motacilla,216,191,6.0
+Stelgidopteryx serripennis,bnrwsx,Northern Rough-winged Swallow,West Virginia,1225943.1,Stelgidopteryx serripennis,166,78,2.5
+Seiurus aurocapilla,bovenx,Ovenbird,West Virginia,3879354.51,Seiurus aurocapilla,1392,936,29.4
+Dryocopus pileatus,bpiwox,Pileated Woodpecker,West Virginia,5073679.62,Dryocopus pileatus,704,594,18.7
+Archilochus colubris,brthux,Ruby-throated Hummingbird,West Virginia,5347565.28,Archilochus colubris,130,117,3.7
+Baeolophus bicolor,btutix,Tufted Titmouse,West Virginia,5449565.97,Baeolophus bicolor,1515,1133,35.6
+Vireo gilvus,bwavix,Warbling Vireo,West Virginia,4686021.36,Vireo gilvus,46,34,1.1
+Meleagris gallopavo,bwitux,Wild Turkey,West Virginia,5925568.86,Meleagris gallopavo,113,89,2.8
+Troglodytes troglodytes,bwiwrx,Winter Wren,West Virginia,4909355.55,Troglodytes hiemalis,56,51,1.6
+Coccyzus americanus,bybcux,Yellow-billed Cuckoo,West Virginia,2048339.7,Coccyzus americanus,369,315,9.9
+Turdus migratorius,bamrox,American Robin,West Virginia,6098464.08,Turdus migratorius,2614,1373,43.2
+Strix varia,bbadox,Barred Owl,West Virginia,3927748.32,Strix varia,40,37,1.2
+Cyanocitta cristata,bbljax,Blue Jay,West Virginia,5172278.4,Cyanocitta cristata,1134,801,25.2
+Dolichonyx oryzivorus,bbobox,Bobolink,West Virginia,97994.16,Dolichonyx oryzivorus,125,43,1.4
+Chaetura pelagica,bchswx,Chimney Swift,West Virginia,6158449.71,Chaetura pelagica,328,159,5.0
+Spizella pusilla,bfispx,Field Sparrow,West Virginia,1037134.44,Spizella pusilla,1116,648,20.4
+Butorides virescens,bgrhex,Green Heron,West Virginia,303048.27,Butorides virescens,46,36,1.1
+Ammodramus savannarum,bgrspx,Grasshopper Sparrow,West Virginia,375212.7,Ammodramus savannarum,95,60,1.9
+Anas platyrhynchos,bmallx,Mallard,West Virginia,592507.08,Anas platyrhynchos,85,37,1.2
+Colaptes auratus,bnoflx,Northern Flicker,West Virginia,4909660.29,Colaptes auratus,462,401,12.6
+Pheucticus ludovicianus,brbgrx,Rose-breasted Grosbeak,West Virginia,2934551.07,Pheucticus ludovicianus,182,153,4.8
+Piranga olivacea,bsctax,Scarlet Tanager,West Virginia,3670599.42,Piranga olivacea,1549,1205,37.9
+Melospiza georgiana,bswspx,Swamp Sparrow,West Virginia,75040.47,Melospiza georgiana,73,46,1.4
+Carduelis tristis,bamgox,American Goldfinch,West Virginia,1632671.37,Spinus tristis,1328,756,23.8
+Polioptila caerulea,bbggnx,Blue-gray Gnatcatcher,West Virginia,4882356.36,Polioptila caerulea,391,328,10.3
+Vireo solitarius,bbhvix,Blue-headed Vireo,West Virginia,2237941.89,Vireo solitarius,490,367,11.5
+Dendroica fusca,bblbwx,Blackburnian Warbler,West Virginia,2258887.59,Setophaga fusca,126,103,3.2
+Tyrannus tyrannus,beakix,Eastern Kingbird,West Virginia,2558729.79,Tyrannus tyrannus,121,100,3.1
+Sayornis phoebe,beaphx,Eastern Phoebe,West Virginia,32705.82,Sayornis phoebe,526,453,14.2
+Pipilo erythrophthalmus,beatox,Eastern Towhee,West Virginia,2255239.89,Pipilo erythrophthalmus,2044,1364,42.9
+Sturnus vulgaris,beustx,European Starling,West Virginia,1447186.68,Sturnus vulgaris,2601,417,13.1
+Passerina cyanea,binbux,Indigo Bunting,West Virginia,765289.98,Passerina cyanea,2181,1455,45.7
+Empidonax minimus,bleflx,Least Flycatcher,West Virginia,458984.43,Empidonax minimus,85,68,2.1
+Cardinalis cardinalis,bnocax,Northern Cardinal,West Virginia,180056.07,Cardinalis cardinalis,1740,1203,37.8
+Parula americana,bnopax,Northern Parula,West Virginia,286991.28,Setophaga americana,231,205,6.4
+Dendroica pinus,bpiwax,Pine Warbler,West Virginia,175105.8,Setophaga pinus,45,34,1.1
+Buteo jamaicensis,brthax,Red-tailed Hawk,West Virginia,5227627.32,Buteo jamaicensis,62,56,1.8
+Piranga rubra,bsutax,Summer Tanager,West Virginia,2726474.58,Piranga rubra,76,67,2.1
+Sitta carolinensis,bwbnux,White-breasted Nuthatch,West Virginia,4868838.09,Sitta carolinensis,736,606,19.1
+Helmitheros vermivorum,bwewax,Worm-eating Warbler,West Virginia,4624566.84,Helmitheros vermivorum,149,125,3.9
+Megaceryle alcyon,bbekix,Belted Kingfisher,West Virginia,1125053.91,Megaceryle alcyon,86,78,2.5
+Molothrus ater,bbhcox,Brown-headed Cowbird,West Virginia,2184559.2,Molothrus ater,446,322,10.1
+Branta canadensis,bcangx,Canada Goose,West Virginia,1262066.13,Branta canadensis,591,78,2.5
+Bombycilla cedrorum,bcedwx,Cedar Waxwing,West Virginia,3088388.34,Bombycilla cedrorum,1182,477,15.0
+Spizella passerina,bchspx,Chipping Sparrow,West Virginia,1791808.38,Spizella passerina,838,596,18.7
+Junco hyemalis,bdejux,Dark-eyed Junco,West Virginia,1879312.14,Junco hyemalis,248,172,5.4
+Contopus virens,beawpx,Eastern Wood-pewee,West Virginia,3260946.06,Contopus virens,693,583,18.3
+Myiarchus crinitus,bgcflx,Great Crested Flycatcher,West Virginia,2912577.84,Myiarchus crinitus,301,260,8.2
+Picoides villosus,bhawox,Hairy Woodpecker,West Virginia,4895726.94,Picoides villosus,146,135,4.2
+Catharus guttatus,bhethx,Hermit Thrush,West Virginia,2977563.69,Catharus guttatus,157,116,3.6
+Passerculus sandwichensis,bsavsx,Savannah Sparrow,West Virginia,1009307.16,Passerculus sandwichensis,67,45,1.4
+Vireo griseus,bwevix,White-eyed Vireo,West Virginia,1113081.75,Vireo griseus,260,216,6.8
+Empidonax traillii,bwiflx,Willow Flycatcher,West Virginia,115219.44,Empidonax traillii,97,73,2.3
+Dendroica petechia,bywarx,Yellow Warbler,West Virginia,472930.47,Setophaga petechia,434,355,11.2
