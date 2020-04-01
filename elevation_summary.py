@@ -48,7 +48,7 @@ def elev_from_model(gap_id, parameter, region):
     # Return elevation
     return elevation
 
-# Create a function for retrieving the elevation parameter from sciencebase
+# Create a function for retrieving the elevation min or max from hab map
 def elev_from_map(gap_id, parameter):
     """
     Assessess GAP habitat map against elevation raster to determine the max
@@ -87,6 +87,3 @@ for sp in species_list:
     newDF.loc[sp, 'GAP_max_map'] = max_map
     
 newDF.to_csv(resultsCSV)
-    
-
-
