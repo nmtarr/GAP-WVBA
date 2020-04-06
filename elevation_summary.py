@@ -73,12 +73,18 @@ inDF.to_csv(archiveCSV)
 newDF = inDF.copy()
 
 # Get a python list of species codes to loop through.
-species_list = 
+species_list = pd.read_csv(listDir, dtype={'strUC': 'string'}) 
+#i = "bWOTHx"  
+for i in df['strUC'] : 
+    try:
+        i = i[:1] + i[1:5].upper() + i[-1:]
+        print(i) 
+        dataset = rangDir + i + '_CONUS_01S_2001v1.tif'  
 
 # For each species, determine the model parameters, and record in the results
 # dataframe
-for sp in species_list:
-    print(sp)
+#for sp in species_list:
+#    print(sp)
     # Here's a start for how you'd use the function to get data from the hab model
     max_s6 = elev_from_model(sp, 'max', '6')
     newDF.loc[sp, 'GAP_max_SE'] = max_s6

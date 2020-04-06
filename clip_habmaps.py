@@ -14,11 +14,12 @@ import pandas as pd
 from rasterio.plot import show
 
 # Set paths to data
-#projDir = "P:/Proj6/GAP-WVBA/"
+projDir = "P:/Proj6/GAP-WVBA/"
 #CONUSDir = "P:/Proj3/USGap/Vert/Model/Output/CONUS/01/Summer/"
-projDir = "C:/Users/jhpage/"
+#projDir = "C:/Users/jhpage/"
 dataDir = projDir + "Data/"
-rangDir = dataDir + 'USGap/Vert/Model/Output/CONUS/01/Summer/'
+#rangDir = dataDir + 'USGap/Vert/Model/Output/CONUS/01/Summer/'
+rangDir = projDir + "Temp/"
 clipDir = dataDir + 'habmaps'
 listDir = dataDir + 'Specieslists/WV_AtlasCodes.csv'
 wvBoundary = projDir + 'WV_GAPcover/2001/WVworkspace/wv_bound.shp'
@@ -47,7 +48,7 @@ for i in df['strUC'] :
             out_file = clipDir+ '/' + i + '_wv.tif'
             with rasterio.open(out_file, "w", **out_meta) as dest:
                 dest.write(out_image)
-                show(out_image)
+                #show(out_image)
                 print('IT WORKED!!!!')
     except Exception as e:
         print('Something went wrong with ' + i + '_wv') 
