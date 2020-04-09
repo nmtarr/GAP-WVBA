@@ -24,11 +24,20 @@ to run it.
 """
 from datetime import datetime
 import pandas as pd
+import json
+import sciencebasepy as sb
 
 # Set paths to data
 projDir = "P:/Proj6/GAP-WVBA/"
+dataDir = projDir + "Data/"
 habitatDir = projDir + "Data/habmaps/"
+listDir = dataDir + 'Specieslists/WV_AtlasCodes.csv'
 resultsCSV = projDir + "Results/elevation_summary.csv"
+toDir = "T:/Temp/"
+
+
+# Connect
+sb = sb.SbSession()
 
 # Create a function for retrieving the elevation parameter from sciencebase
 def elev_from_model(gap_id, parameter, region):
@@ -45,9 +54,42 @@ def elev_from_model(gap_id, parameter, region):
     elev = elev_from_model('bAMROx', 'max', '6')
     """
     ######## FILL OUT BY FOLLOWING example_read_json.py
+    # Get a python list of species codes to loop through.
+    species_list = pd.read_csv(listDir, dtype={'strUC': 'string'}) 
+    #i = "bWOTHx"  
+    for gap_id in species_list['strUC'] : 
+        try:
+            gap_id = gap_id[:1] + gap_id[1:5].upper() + gap_id[-1:]
+            print(str("Retreiving data for") + gap_id)  
+    
+    # Search for gap model item in ScienceBase
+            gap_id = gap_id[0] + gap_id[1:5].upper() + gap_id[5]
+            item_search = '{0}_CONUS_HabModel_2001v1.json'.format(gap_id)
+            items = sb.find_items_by_any_text(item_search)
+
+    # Get a public item.  No need to log in.
+            mod =  items['items'][0]['id']
+            item_json = sb.get_item(mod)
+            sb.get_item_files(item_json, toDir)
+
+    # Read in the json of the model
+            with open(toDir + gap_id + "_CONUS_HabModel_2001v1.json", 
+                      "r") as inJSON:
+                model_json = json.load(inJSON)
+
+    # Drill down to the species models
+            mods = model_json["models"]
+            NE_summer_primary = [x[1] for x in mods[gap_id +  str('-s3')]
+                                 ['PrimEcoSys']]
+            SE_summer_primary = [x[1] for x in mods[gap_id +  str('-s6')]
+                                 ['PrimEcoSys']]   
+    
+        except Exception as e: 
+            print((str("Retreiving data for")) + gap_id + (str("failed.")) + e)
     # Return elevation
     return elevation
 
+"""
 # Create a function for retrieving the elevation min or max from hab map
 def elev_from_map(gap_id, parameter):
     """
@@ -63,14 +105,20 @@ def elev_from_map(gap_id, parameter):
     """
     ######## Not sure yet the best way to do this. arcpy? 
     # Return elevation
-    return elevation
+     return elevation
+"""
 
 # Read in elevation.csv as a dataframe and save a copy in the archive
 inDF = pd.read_csv(resultsCSV)
-timestamp = str()#use datetime.now() to get a timestamp string for the file name.
-archiveCSV = projDir + "Results/elevation_" + timestamp + ".csv"
-inDF.to_csv(archiveCSV)
+timestamp = str(datetime.now(tz=None).strftime("%d%B%Y_%I%M%p"))
+archiveCSV = projDir + "/Results/Archive/elevation_" + timestamp + ".csv"
 newDF = inDF.copy()
+newDF.to_csv(archiveCSV)
+workDF = pd.read_csv(archiveCSV)
+species_list = pd.read_csv(listDir, dtype={'strUC': 'string'}, index_col=0) 
+for i in species_list['strUC'] :
+    workDF = pd.concat(workDF, 0, 'outer', '', (['strUC'], 'GAP_code')) 
+workDF.to_csv(archiveCSV)
 
 # Get a python list of species codes to loop through.
 species_list = pd.read_csv(listDir, dtype={'strUC': 'string'}) 
@@ -92,4 +140,5 @@ for i in df['strUC'] :
     max_map = elev_from_map(sp, 'max')
     newDF.loc[sp, 'GAP_max_map'] = max_map
     
-newDF.to_csv(resultsCSV)
+# newDF.to_csv(resultsCSV)
+
