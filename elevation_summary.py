@@ -33,8 +33,28 @@ dataDir = projDir + "Data/"
 habitatDir = projDir + "Data/habmaps/"
 listDir = dataDir + 'Specieslists/WV_AtlasCodes.csv'
 resultsCSV = projDir + "Results/elevation_summary.csv"
-toDir = "T:/Temp/"
+toDir = "C:/Temp/"
+#toDir = "T:/Temp/"
 
+# Read in elevation.csv as a dataframe and save a copy in the archive, 
+#run only once as spp list will be reread and duplicated each time
+inDF = pd.read_csv(resultsCSV, dtype={'GAP_code': 'string', 
+                                      'common_name': 'string'})
+timestamp = str(datetime.now(tz=None).strftime("%d%B%Y_%I%M%p"))
+archiveCSV = projDir + "/Results/Archive/elevation_" + timestamp + ".csv"
+newDF = inDF.copy(deep=True)
+sppList = pd.read_csv(listDir, dtype={'strUC': 'string',
+                                      'strCommonName': 'string'}) 
+sppList.rename(columns = {'strUC':'GAP_code'}, inplace = True)
+sppList.rename(columns = {'strCommonName':'common_name'}, inplace = True)
+sppList.drop(['state_name', 'strScientificName_x','intHa', 
+              'strScientificName_y', 'N_birds', 'N_points', 'Det_Rate'], 
+             axis='columns', index=None, columns=None, 
+            level=None, inplace=True, errors='raise')
+fullDF = newDF.append(sppList) 
+#fullDF.set_index('GAP_code', drop = True, append = False, inplace = True)
+fullDF.to_csv(archiveCSV)
+fullDF.to_csv(resultsCSV) #updates elev summary table with spp list as index 
 
 # Connect
 sb = sb.SbSession()
@@ -55,39 +75,37 @@ def elev_from_model(gap_id, parameter, region):
     """
     ######## FILL OUT BY FOLLOWING example_read_json.py
 # Get a python list of species codes to loop through.
-    species_list = pd.read_csv(listDir, dtype={'strUC': 'string'}) 
-#i = "bWOTHx"  
-    for gap_id in species_list['strUC'] : 
-        try:
-            gap_id = gap_id[:1] + gap_id[1:5].upper() + gap_id[-1:]
-            print(str("Retreiving data for") + gap_id)  
-    
+elTable = pd.read_csv(resultsCSV) 
+i = "bwothx"
+for i in elTable['GAP_code'] :   #Does not call the specified i variable
+    try: 
  # Search for gap model item in ScienceBase
-            gap_id = gap_id[0] + gap_id[1:5].upper() + gap_id[5]
-            item_search = '{0}_CONUS_HabModel_2001v1.json'.format(gap_id)
-            items = sb.find_items_by_any_text(item_search)
+        spp = i[0] + i[1:5].upper() + i[5]
+        print(str("Retreiving data for") + spp) 
+        item_search = '{0}_CONUS_HabModel_2001v1.json'.format(spp)
+        items = sb.find_items_by_any_text(item_search)
 
 # Get a public item.  No need to log in.
-            mod =  items['items'][0]['id']
-            item_json = sb.get_item(mod)
-            sb.get_item_files(item_json, toDir)
+        mod =  items['items'][0]['id']
+        item_json = sb.get_item(mod)
+        sb.get_item_files(item_json, toDir)
 
 # Read in the json of the model
-            with open(toDir + gap_id + "_CONUS_HabModel_2001v1.json", 
-                      "r") as inJSON:
-                model_json = json.load(inJSON)
+        with open(toDir + spp + "_CONUS_HabModel_2001v1.json", 
+                  "r") as inJSON:
+            model_json = json.load(inJSON)
 
 # Drill down to the species models
-            mods = model_json["models"]
-            NE_summer_primary = [x[1] for x in mods[gap_id +  str('-s3')]
-                                 ['PrimEcoSys']]
-            SE_summer_primary = [x[1] for x in mods[gap_id +  str('-s6')]
-                                 ['PrimEcoSys']]   
-    
-        except Exception as e: 
-            print((str("Retreiving data for")) + gap_id + (str("failed.")) + e)
+        mods = model_json["models"]
+        NE_summer_primary = [x[1] for x in mods[spp + '-s3']  #gives keyword error
+                             ['PrimEcoSys']]
+        SE_summer_primary = [x[1] for x in mods[spp + '-s6']
+                             ['PrimEcoSys']]   
+
+    except Exception as e: 
+        print(((str("Retreiving data for")) + spp + (str("failed."))) + e)
     # Return elevation
-return elevation
+    return elevation
 
 """
 # Create a function for retrieving the elevation parameter from map
@@ -108,17 +126,9 @@ return elevation
         return elevation
 """
 
-# Read in elevation.csv as a dataframe and save a copy in the archive
-inDF = pd.read_csv(resultsCSV)
-timestamp = str(datetime.now(tz=None).strftime("%d%B%Y_%I%M%p"))
-archiveCSV = projDir + "/Results/Archive/elevation_" + timestamp + ".csv"
-newDF = inDF.copy()
-newDF.to_csv(archiveCSV)
-workDF = pd.read_csv(archiveCSV)
-species_list = pd.read_csv(listDir, dtype={'strUC': 'string'}, index_col=0) 
-for i in species_list['strUC'] :
-    workDF = pd.concat(workDF, 0, 'outer', '', (['strUC'], 'GAP_code')) 
-workDF.to_csv(archiveCSV)
+
+
+#workDF['GAP_code'] = species_list['strUC']
 
 # Get a python list of species codes to loop through.
 species_list = pd.read_csv(listDir, dtype={'strUC': 'string'}) 
