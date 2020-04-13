@@ -5,7 +5,7 @@ Created on Wed Apr  8 11:42:47 2020
 @author: Jessica Page Jordan
 """
 #execfile("C:/Users/Jessica/GAP-WVBA/AppendSysPaths3.py").read()
-#use the following to import arcpy
+#use the following to import arcpy when using command propt
 import sys
 sys.path.append('C:/Program Files (x86)/ArcGIS/Desktop10.4/bin64')
 sys.path.append('C:/Program Files (x86)/ArcGIS/Desktop10.4/ArcPy')
@@ -16,7 +16,7 @@ arcpy.env.overwriteOutput = True
 from arcpy import env
 from arcpy.sa import *
 arcpy.CheckOutExtension("Spatial")
-import sys
+#import sys
 #sys.path.append("T:/Gap/Data")
 #sys.path.append('T:/Scripts/GAPage')
 #import gapage as gp
@@ -27,6 +27,7 @@ fromLoc = "P:/Proj3/USGap/Vert/Model/data/Temp/"
 toLoc = projDir + 'WV_GAPcover/2001/WVworkspace/'
 arcpy.env.workspace = fromLoc
 arcpy.env.workspace = toLoc
+arcpy.env.snapRaster = fromLoc + "snapgrid"
 
 # Paths
 
@@ -34,15 +35,14 @@ arcpy.env.workspace = toLoc
 #neElev = gapDataDir + "Elev/elev_ne"
 #seLC = gapDataDir + "LandCover/lcgap_se"
 #neLC = gapDataDir + "LandCover/lcgap_ne"
-neMask = gapDataDir + "Mask/maskclp_ne"
-seMask = gapDataDir + "Mask/maskclp_se"
+neMask = fromLoc + "maskclp_ne"
+seMask = fromLoc + "maskclp_se"
 seElev = fromLoc + "elev_se"
 neElev = fromLoc + "elev_ne"
 seLC = fromLoc + "lcgap_se"
 neLC = fromLoc + "lcgap_ne"
 
 #Mask regional data to exclude buffer
-#try:
 #Mask neElev   
 outExtractByMask = arcpy.sa.ExtractByMask(neElev, neMask)
 neEl_clip = toLoc + 'neElclip'
@@ -63,19 +63,16 @@ outExtractByMask = arcpy.sa.ExtractByMask(seLC, seMask)
 seLC_clip = toLoc + 'seLCclip'
 outExtractByMask.save(seLC_clip)
 print("neLC clipped succesfully")
-#except Exception as e:
-   # print(e) 
-"""
-#not used yet
+
 #Mosaic together NE and SE regions
+ElRast = arcpy.ListRasters("*" + "Elclip")
 eElev= toLoc + "elev"
-arcpy.MosaicToNewRaster_management ((neEl_clip, seEl_clip), toLoc, 
-                              eElev, "", "", "", 1,) 
+arcpy.MosaicToNewRaster_management(ElRast, toLoc, "elev", "", "", "", 1,) 
 print("Elevation mosaic successful") 
 
+LCRast = arcpy.ListRasters("*" + "LCclip")
 eLC= fromLoc + "lcgap"
-arcpy.MosaicToNewRaster_management ((neLC_clip, seLC_clip), toLoc, 
-                              eLC, "", "", "", 1,)  
+arcpy.MosaicToNewRaster_management(LCRast, toLoc, "lcgap", "", "", "", 1,)  
 print("Land Cover mosaic successful")
 
 #Clip mosaiced rasters to W.Virginia
@@ -89,7 +86,7 @@ outExtractByMask = arcpy.sa.ExtractByMask(eLC, wvBoundary)
 wvLC = toLoc + 'wvLC'
 outExtractByMask.save(wvLC)
 print("neLC clipped succesfully")
-"""
+
 
 """
 arcpy.management.BuildPyramidsandStatistics(toLoc, skip_existing=True)
