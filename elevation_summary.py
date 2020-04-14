@@ -26,6 +26,8 @@ from datetime import datetime
 import pandas as pd
 import json
 import sciencebasepy as sb
+import os
+import glob
 
 # Set paths to data
 projDir = "P:/Proj6/GAP-WVBA/"
@@ -52,7 +54,7 @@ sppList.drop(['state_name', 'strScientificName_x','intHa',
              axis='columns', index=None, columns=None, 
             level=None, inplace=True, errors='raise')
 fullDF = newDF.append(sppList) 
-#fullDF.set_index('GAP_code', drop = True, append = False, inplace = True)
+fullDF.set_index('GAP_code', drop = True, append = False, inplace = True)
 fullDF.to_csv(archiveCSV)
 fullDF.to_csv(resultsCSV) #updates elev summary table with spp list as index 
 
@@ -74,16 +76,22 @@ def elev_from_model(gap_id, parameter, region):
     elev = elev_from_model('bAMROx', 'max', '6')
     """
     ######## FILL OUT BY FOLLOWING example_read_json.py
-<<<<<<< HEAD
+    
+######model not completed, fills table properly but overwrites each species 
+######with each save, neeed to add year-round data    
 # Get a python list of species codes to loop through.
-elTable = pd.read_csv(resultsCSV) 
-i = "bwothx"
-for i in elTable['GAP_code'] :   #Does not call the specified i variable
-    try: 
- # Search for gap model item in ScienceBase
-        spp = i[0] + i[1:5].upper() + i[5]
-        print(str("Retreiving data for") + spp) 
-        item_search = '{0}_CONUS_HabModel_2001v1.json'.format(spp)
+timestamp = str(datetime.now(tz=None).strftime("%d%B%Y_%I%M%p"))
+archiveCSV = projDir + "/Results/Archive/elevation_" + timestamp + ".csv"
+elTable = pd.read_csv(resultsCSV, index_col = 'GAP_code', dtype={'GAP_code': 'string', 
+                                      'common_name': 'string'})                        
+i= elTable.index[0:5]
+#i = 'bwothx'
+for i in elTable.index[0:5]:   
+    try:
+        # Search for gap model item in ScienceBase
+        gap_id = i[0] + i[1:5].upper() + i[5]
+        print(str("Retreiving data for ") + gap_id)
+        item_search = '{0}_CONUS_HabModel_2001v1.json'.format(gap_id)
         items = sb.find_items_by_any_text(item_search)
 
 # Get a public item.  No need to log in.
@@ -92,56 +100,47 @@ for i in elTable['GAP_code'] :   #Does not call the specified i variable
         sb.get_item_files(item_json, toDir)
 
 # Read in the json of the model
-        with open(toDir + spp + "_CONUS_HabModel_2001v1.json", 
-                  "r") as inJSON:
+        with open(toDir + gap_id + "_CONUS_HabModel_2001v1.json", 
+              "r") as inJSON:
             model_json = json.load(inJSON)
 
 # Drill down to the species models
         mods = model_json["models"]
-        NE_summer_primary = [x[1] for x in mods[spp + '-s3']  #gives keyword error
-                             ['PrimEcoSys']]
-        SE_summer_primary = [x[1] for x in mods[spp + '-s6']
-                             ['PrimEcoSys']]   
-
-    except Exception as e: 
-        print(((str("Retreiving data for")) + spp + (str("failed."))) + e)
-=======
-    # Get a python list of species codes to loop through.
-    species_list = pd.read_csv(listDir, dtype={'strUC': 'string'}) 
-    #i = "bWOTHx"  
-    for gap_id in species_list['strUC'] : 
         try:
-            gap_id = gap_id[:1] + gap_id[1:5].upper() + gap_id[-1:]
-            print(str("Retreiving data for") + gap_id)  
-    
-    # Search for gap model item in ScienceBase
-            gap_id = gap_id[0] + gap_id[1:5].upper() + gap_id[5]
-            item_search = '{0}_CONUS_HabModel_2001v1.json'.format(gap_id)
-            items = sb.find_items_by_any_text(item_search)
-
-    # Get a public item.  No need to log in.
-            mod =  items['items'][0]['id']
-            item_json = sb.get_item(mod)
-            sb.get_item_files(item_json, toDir)
-
-    # Read in the json of the model
-            with open(toDir + gap_id + "_CONUS_HabModel_2001v1.json", 
-                      "r") as inJSON:
-                model_json = json.load(inJSON)
-
-    # Drill down to the species models
-            mods = model_json["models"]
-            NE_summer_primary = [x[1] for x in mods[gap_id +  str('-s3')]
-                                 ['PrimEcoSys']]
-            SE_summer_primary = [x[1] for x in mods[gap_id +  str('-s6')]
-                                 ['PrimEcoSys']]   
-    
+            if gap_id + '-s3' in mods.keys():
+                model = mods[gap_id + '-s3']
+                NE_summer_maxElev = model['intElevMax']
+                elTable.loc[[i],['GAP_max_NE']] = NE_summer_maxElev
+                NE_summer_minElev = model['intElevMin']
+                elTable.loc[[i],['GAP_min_NE']] = NE_summer_minElev
         except Exception as e: 
-            print((str("Retreiving data for")) + gap_id + (str("failed.")) + e)
+            print(str("Failure retreiving ne_intElev data for") + gap_id) 
+            print(e)
+    
+        try:   
+            if gap_id + '-s6' in mods.keys():
+                modelse = mods[gap_id + '-s6']
+                SE_summer_maxElev = modelse['intElevMax']
+                elTable.loc[[i],['GAP_max_SE']] = SE_summer_maxElev 
+                SE_summer_minElev = modelse['intElevMin'] 
+                elTable.loc[[i],['GAP_min_SE']] = SE_summer_minElev 
+        except Exception as e: 
+            print(str("Failure retreiving se_intElev data for") + gap_id)
+            print (e)
+        elTable.to_csv(archiveCSV)
+        files = glob.glob(toDir + '*')
+        for f in files:
+            os.remove(f)
+    except Exception as e: 
+        print(str("Failure retreiving data for ") + gap_id)
+        print(e)
+    
+"""    
 >>>>>>> c875d4be8258f5965184f227e1af929f0286eb27
     # Return elevation
     return elevation
 
+"""
 """
 # Create a function for retrieving the elevation min or max from hab map
 def elev_from_map(gap_id, parameter):
@@ -159,7 +158,6 @@ def elev_from_map(gap_id, parameter):
     ######## Not sure yet the best way to do this. arcpy? 
     # Return elevation
      return elevation
-"""
 
 
 
