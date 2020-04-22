@@ -28,6 +28,8 @@ import json
 import sciencebasepy as sb
 import os
 import glob
+import random
+from retrying import retry
 
 # Set paths to data
 projDir = "P:/Proj6/GAP-WVBA/"
@@ -76,112 +78,97 @@ def elev_from_model(gap_id, parameter, region):
     elev = elev_from_model('bAMROx', 'max', '6')
     """
     ######## FILL OUT BY FOLLOWING example_read_json.py
-    
-######model not completed, fills table properly but overwrites each species 
-######with each save, neeed to add year-round data    
+
 # Get a python list of species codes to loop through.
 timestamp = str(datetime.now(tz=None).strftime("%d%B%Y_%I%M%p"))
 archiveCSV = projDir + "/Results/Archive/elevation_" + timestamp + ".csv"
 elTable = pd.read_csv(resultsCSV, index_col = 'GAP_code', dtype={'GAP_code': 'string', 
-                                      'common_name': 'string'})                        
-i= elTable.index[0:5]
-#i = 'bwothx'
-for i in elTable.index[0:5]:   
-    try:
+                                     'common_name': 'string'})                        
+i= elTable.index[0:7]
+for i in elTable.index[0:7]:
+    gap_id = i[0] + i[1:5].upper() + i[5]
+    while gap_id + "*" not in toDir:       
         # Search for gap model item in ScienceBase
-        gap_id = i[0] + i[1:5].upper() + i[5]
         print(str("Retreiving data for ") + gap_id)
         item_search = '{0}_CONUS_HabModel_2001v1.json'.format(gap_id)
         items = sb.find_items_by_any_text(item_search)
-
 # Get a public item.  No need to log in.
         mod =  items['items'][0]['id']
         item_json = sb.get_item(mod)
-        sb.get_item_files(item_json, toDir)
-
+        sb.get_item_files(item_json, toDir)  
+        break
 # Read in the json of the model
+    try:   
+        print("Opening JSON file for gap_id")  
         with open(toDir + gap_id + "_CONUS_HabModel_2001v1.json", 
               "r") as inJSON:
             model_json = json.load(inJSON)
 
 # Drill down to the species models
-        mods = model_json["models"]
+        mods = model_json["models"]  
         try:
             if gap_id + '-s3' in mods.keys():
-                model = mods[gap_id + '-s3']
-                NE_summer_maxElev = model['intElevMax']
-                elTable.loc[[i],['GAP_max_NE']] = NE_summer_maxElev
-                NE_summer_minElev = model['intElevMin']
-                elTable.loc[[i],['GAP_min_NE']] = NE_summer_minElev
+                models3 = mods[gap_id + '-s3']
+                NE_maxElev = models3['intElevMax']
+                elTable.loc[i,'GAP_max_NE'] = NE_maxElev
+                NE_minElev = models3['intElevMin']
+                elTable.loc[i,'GAP_min_NE'] = NE_minElev
+            if gap_id + '-y3' in mods.keys():
+                modely3 = mods[gap_id + '-y3']
+                NE_maxElev = modely3['intElevMax']
+                elTable.loc[i,'GAP_max_NE'] = NE_maxElev
+                NE_minElev = modely3['intElevMin']
+                elTable.loc[i,'GAP_min_NE'] = NE_minElev   
+            if gap_id + '-y3' and gap_id + '-s3' not in mods.keys():
+                   elTable.loc[i,'GAP_max_NE'] = str("None specified") 
+                   elTable.loc[i,'GAP_min_NE'] = str("None specified")
+            if NE_maxElev is None:
+                    elTable.loc[i,'GAP_max_NE'] = "None" 
+            if NE_minElev is None:
+                    elTable.loc[i,'GAP_min_NE'] = "None"                      
+            print(str("Elevation data filled for") + gap_id)
         except Exception as e: 
-            print(str("Failure retreiving ne_intElev data for") + gap_id) 
-            print(e)
-    
+            print(str("Failure writing ne_intElev data for") + gap_id) 
+            print(e) 
+
         try:   
             if gap_id + '-s6' in mods.keys():
-                modelse = mods[gap_id + '-s6']
-                SE_summer_maxElev = modelse['intElevMax']
-                elTable.loc[[i],['GAP_max_SE']] = SE_summer_maxElev 
-                SE_summer_minElev = modelse['intElevMin'] 
-                elTable.loc[[i],['GAP_min_SE']] = SE_summer_minElev 
+                models6 = mods[gap_id + '-s6']
+                SE_maxElev = models6['intElevMax']
+                elTable.loc[i,'GAP_max_SE'] = SE_maxElev
+                SE_minElev = models6['intElevMin']
+                elTable.loc[i,'GAP_min_SE'] = SE_minElev
+            if gap_id + '-y6' in mods.keys():
+                modely6 = mods[gap_id + '-y6']
+                SE_maxElev = modely6['intElevMax']
+                elTable.loc[i,'GAP_max_SE'] = SE_maxElev
+                SE_minElev = modely6['intElevMin']
+                elTable.loc[i,'GAP_min_SE'] = SE_minElev   
+            if gap_id + '-y6' and gap_id + '-s6' not in mods.keys():
+                   elTable.loc[i,'GAP_max_SE'] = str("None specified") 
+                   elTable.loc[i,'GAP_min_SE'] = str("None specified")
+            if SE_maxElev is None:
+                    elTable.loc[i,'GAP_max_SE'] = "None" 
+            if SE_minElev is None:
+                    elTable.loc[i,'GAP_min_SE'] = "None"   
         except Exception as e: 
             print(str("Failure retreiving se_intElev data for") + gap_id)
-            print (e)
-        elTable.to_csv(archiveCSV)
+            print (e)                
         files = glob.glob(toDir + '*')
         for f in files:
             os.remove(f)
     except Exception as e: 
         print(str("Failure retreiving data for ") + gap_id)
-        print(e)
-    
+        print(e)        
+elTable.to_csv(archiveCSV)
 """    
 >>>>>>> c875d4be8258f5965184f227e1af929f0286eb27
     # Return elevation
     return elevation
 
 """
-"""
-# Create a function for retrieving the elevation min or max from hab map
-def elev_from_map(gap_id, parameter):
-    """
-    Assessess GAP habitat map against elevation raster to determine the max
-    or min elevation of suitable habitat grid cells (summer).
-    
-    Parameters:
-    gap_id -- GAP species code
-    parameter -- either "max" or "min"
-    
-    Example:
-    elev = elev_from_map('bAMROx', 'max')
-    """
-    ######## Not sure yet the best way to do this. arcpy? 
-    # Return elevation
-     return elevation
 
 
 
-#workDF['GAP_code'] = species_list['strUC']
 
-# Get a python list of species codes to loop through.
-species_list = pd.read_csv(listDir, dtype={'strUC': 'string'}) 
-#i = "bWOTHx"  
-for i in df['strUC'] : 
-    try:
-        i = i[:1] + i[1:5].upper() + i[-1:]
-        print(i) 
-        dataset = rangDir + i + '_CONUS_01S_2001v1.tif'  
-
-# For each species, determine the model parameters, and record in the results
-# dataframe
-#for sp in species_list:
-#    print(sp)
-    # Here's a start for how you'd use the function to get data from the hab model
-    max_s6 = elev_from_model(sp, 'max', '6')
-    newDF.loc[sp, 'GAP_max_SE'] = max_s6
-    # Get the max elevation from the habitat map
-    max_map = elev_from_map(sp, 'max')
-    newDF.loc[sp, 'GAP_max_map'] = max_map
-    
-# newDF.to_csv(resultsCSV)
 
