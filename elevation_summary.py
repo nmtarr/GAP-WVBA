@@ -84,8 +84,8 @@ timestamp = str(datetime.now(tz=None).strftime("%d%B%Y_%I%M%p"))
 archiveCSV = projDir + "/Results/Archive/elevation_" + timestamp + ".csv"
 elTable = pd.read_csv(resultsCSV, index_col = 'GAP_code', dtype={'GAP_code': 'string', 
                                      'common_name': 'string'})                        
-i= elTable.index[0:7]
-for i in elTable.index[0:7]:
+i= elTable.index[0:]
+for i in elTable.index[0:]:
     gap_id = i[0] + i[1:5].upper() + i[5]
     while gap_id + "*" not in toDir:       
         # Search for gap model item in ScienceBase

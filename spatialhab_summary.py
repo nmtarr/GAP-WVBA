@@ -27,6 +27,9 @@ def elev_from_map(gap_id, parameter):
 python
 from datetime import datetime
 import pandas as pd
+import dbfread
+from dbfread import DBF
+from pandas import DataFrame
 import os, glob, sys
 
 sys.path.append('C:/Program Files (x86)/ArcGIS/Desktop10.4/bin64')
@@ -42,6 +45,7 @@ arcpy.CheckOutExtension("Spatial")
 projDir = "P:/Proj6/GAP-WVBA/"
 gapDataDir = "P:/Proj3/USGap/Vert/Model/data/"
 habitatDir = projDir + "Data/habmaps/"
+lchabitatDir = projDir + "Data/lchabmaps/"
 fromLoc = "P:/Proj3/USGap/Vert/Model/data/Temp/"
 toLoc = projDir + 'WV_GAPcover/2001/WVworkspace/'
 arcpy.env.workspace = fromLoc
@@ -51,31 +55,44 @@ arcpy.env.cellSize = "MINOF"
 wvLC = toLoc + 'wvlc'
 arcpy.BuildRasterAttributeTable_management(wvLC)
 
-dataDir = projDir + "Data/"
-habitatDir = projDir + "Data/habmaps/"
-listDir = dataDir + 'Specieslists/WV_AtlasCodes.csv'
 resultsCSV = projDir + "Results/elevation_summary.csv"
 toDir = "C:/Temp/"
 
-timestamp = str(datetime.now().strftime("%d%B%Y_%I%M%p"))
-archiveCSV = projDir + "/Results/Archive/elevation_" + timestamp + ".csv"
 elTable = pd.read_csv(resultsCSV, index_col = 'GAP_code', dtype={'GAP_code': 'string', 
                                      'common_name': 'string'})                        
-i= elTable.index[8:9]
-for i in elTable.index[8:9]:
+i= elTable.index[0:]
+for i in elTable.index[0:]:
     try:
         gap_id = i[0] + i[1:5].upper() + i[5]
         print(gap_id)
         gapRaster = habitatDir + gap_id + "_wv.tif"
         arcpy.BuildRasterAttributeTable_management(gapRaster)
-        print("Performing Zonal Statistics as Table for " + gap_id)
+        print("Reducing landcover data to habitat data for " + gap_id)
         gapRas = arcpy.sa.SetNull(gapRaster, wvLC, "Value <> 1")
-        gapRas.save(habitatDir + gap_id + "_wvred.tif")
+        gapRas.save(lchabitatDir + gap_id + "_wvlc.tif")
+        arcpy.AddField_management(gapRas, "GAP_code", "TEXT")
+        arcpy.AddField_management(gapRas, "LC_count", "TEXT")
+        dbf = DBF(lchabitatDir + gap_id + '_wvlc.tif.vat.dbf')
+        gapHab = DataFrame(iter(dbf))
+        sppField = gapHab["GAP_code"]
+        sppField[0:] = gap_id 
+        countLC = gapHab["LC_count"]
+        countLC[0:] = sppField.count()
+        gapHabCSV = lchabitatDir + gap_id + "_lc.csv"
+        gapHab.to_csv(gapHabCSV)
         gapFiles = glob.glob(habitatDir + gap_id +'_wv.tif.*')
         for g in gapFiles:
             os.remove(g)
     except Exception as e:
         print(e)
+
+os.chdir(lchabitatDir)
+extension = 'csv'
+all_filenames = [i for i in glob.glob('*.{}'.format(extension))] 
+#combine all files in the list
+combined_csv = pd.concat([pd.read_csv(f) for f in all_filenames ])
+#export to csv
+combined_csv.to_csv(projDir + "Results/habitat_summary.csv", index=False)       
 
 
 

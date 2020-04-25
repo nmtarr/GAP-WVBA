@@ -51,9 +51,6 @@ arcpy.env.cellSize = "MINOF"
 wvElev = toLoc + 'wvElev'
 arcpy.BuildRasterAttributeTable_management(wvElev)
 
-dataDir = projDir + "Data/"
-habitatDir = projDir + "Data/habmaps/"
-listDir = dataDir + 'Specieslists/WV_AtlasCodes.csv'
 resultsCSV = projDir + "Results/elevation_summary.csv"
 toDir = "C:/Temp/"
 
