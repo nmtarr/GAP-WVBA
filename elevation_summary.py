@@ -39,7 +39,9 @@ listDir = dataDir + 'Specieslists/WV_AtlasCodes.csv'
 resultsCSV = projDir + "Results/elevation_summary.csv"
 toDir = "C:/Temp/"
 #toDir = "T:/Temp/"
-
+# Connect
+sb = sb.SbSession()
+"""
 # Read in elevation.csv as a dataframe and save a copy in the archive, 
 #run only once as spp list will be reread and duplicated each time
 inDF = pd.read_csv(resultsCSV, dtype={'GAP_code': 'string', 
@@ -60,12 +62,9 @@ fullDF.set_index('GAP_code', drop = True, append = False, inplace = True)
 fullDF.to_csv(archiveCSV)
 fullDF.to_csv(resultsCSV) #updates elev summary table with spp list as index 
 
-# Connect
-sb = sb.SbSession()
-
 # Create a function for retrieving the elevation parameter from sciencebase
 def elev_from_model(gap_id, parameter, region):
-    """
+
     Downloads GAP habitat model dictionary (json) and retrieves the elevation
     setting.
     
@@ -84,20 +83,26 @@ timestamp = str(datetime.now(tz=None).strftime("%d%B%Y_%I%M%p"))
 archiveCSV = projDir + "/Results/Archive/elevation_" + timestamp + ".csv"
 elTable = pd.read_csv(resultsCSV, index_col = 'GAP_code', dtype={'GAP_code': 'string', 
                                      'common_name': 'string'})                        
-i= elTable.index[0:]
-for i in elTable.index[0:]:
-    gap_id = i[0] + i[1:5].upper() + i[5]
-    while gap_id + "*" not in toDir:       
-        # Search for gap model item in ScienceBase
-        print(str("Retreiving data for ") + gap_id)
-        item_search = '{0}_CONUS_HabModel_2001v1.json'.format(gap_id)
-        items = sb.find_items_by_any_text(item_search)
+i= elTable.index[57:]
+for i in elTable.index[57:]:
+    gap_id = i[0] + i[1:5].upper() + i[5]      
+    # Search for gap model item in ScienceBase
+    print(str("Retreiving data for ") + gap_id)
+    item_search = '{0}_CONUS_HabModel_2001v1.json'.format(gap_id)
+    items = sb.find_items_by_any_text(item_search)
 # Get a public item.  No need to log in.
-        mod =  items['items'][0]['id']
-        item_json = sb.get_item(mod)
-        sb.get_item_files(item_json, toDir)  
-        break
+    mod =  items['items'][0]['id']
+    item_json = sb.get_item(mod)
+    sb.get_item_files(item_json, toDir)
+    files = glob.glob(toDir + '*')
+    for f in files:
+        if not f.endswith('HabModel_2001v1.json'):
+            os.remove(f)
+print("Model retreived for " + gap_id)
+
 # Read in the json of the model
+for i in elTable.index[0:]:
+    gap_id = i[0] + i[1:5].upper() + i[5]  
     try:   
         print("Opening JSON file for gap_id")  
         with open(toDir + gap_id + "_CONUS_HabModel_2001v1.json", 
@@ -154,13 +159,14 @@ for i in elTable.index[0:]:
         except Exception as e: 
             print(str("Failure retreiving se_intElev data for") + gap_id)
             print (e)                
-        files = glob.glob(toDir + '*')
-        for f in files:
-            os.remove(f)
     except Exception as e: 
         print(str("Failure retreiving data for ") + gap_id)
         print(e)        
 elTable.to_csv(archiveCSV)
+elTable.to_csv(resultsCSV)        
+#files = glob.glob(toDir + '*')
+#for f in files:
+#    os.remove(f)
 """    
 >>>>>>> c875d4be8258f5965184f227e1af929f0286eb27
     # Return elevation
