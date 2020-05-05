@@ -63,6 +63,7 @@ timestamp = str(datetime.now(tz=None).strftime("%d%B%Y_%I%M%p"))
 archiveCSV = projDir + "/Results/Archive/elevation_" + timestamp + ".csv"
 elTable = pd.read_csv(resultsCSV, index_col = 'WV_species_id', 
                       dtype={'WV_species_id': 'string'}) 
+"""
 for i in elTable.index[108:109]:
     print(i)
     bbaData= projDir + "Data/WVBBA_ALLDATA.csv"
@@ -82,12 +83,38 @@ print("Done")
 elTable = pd.read_csv(resultsCSV, index_col = 'WV_species_id', 
                       dtype={'WV_species_id': 'string'}) 
 for i in elTable.index[0:]:
-    maxdiff = (((elTable.loc[i, 'WVBBA_max']) - (elTable.loc[i, 'GAP_max_map']))/(elTable.loc[i, 'GAP_max_map']))*100
-    mindiff = (((elTable.loc[i, 'GAP_min_map']) - (elTable.loc[i, 'WVBBA_min']))/(elTable.loc[i, 'GAP_min_map']))*100
-    #if maxdiff >0:
-    elTable.loc[i, 'above_GAP_max(%)'] = maxdiff
-    #if maxdiff <=0:
-    elTable.loc[i, 'below_GAP_min(%)'] = mindiff 
+    maxdiff = (elTable.loc[i, 'WVBBA_max']) - (elTable.loc[i, 'GAP_max_map'])
+    mindiff = (elTable.loc[i, 'GAP_min_map']) - (elTable.loc[i, 'WVBBA_min'])
+    elTable.loc[i, 'max_diff'] = maxdiff
+    elTable.loc[i, 'min_diff'] = mindiff 
 elTable.to_csv(archiveCSV)
 elTable.to_csv(resultsCSV)
+"""
 
+for i in elTable.index[83:84]:  
+    print(i)
+    gapMax = elTable.loc[i, 'GAP_max_map']
+    bbaData= projDir + "Data/WVBBA_ALLDATA.csv"
+    bbaDF= pd.read_csv(bbaData)
+    sppTCount = bbaDF[i].sum()
+    bbaDF.set_index('roundelev', drop = False, append = False, inplace = True)
+    bbaDF.drop(bbaDF.index[bbaDF['roundelev'] < gapMax], inplace = True)
+    sppCount = bbaDF[i].sum()
+    perOcc = (sppCount/sppTCount)*100
+    elTable.loc[i, 'above_GAP_max(%)'] = perOcc
+    print(perOcc)
+    
+for i in elTable.index[84:85]:  
+    print(i)    
+    gapMin = elTable.loc[i, 'GAP_min_map']
+    bbaData= projDir + "Data/WVBBA_ALLDATA.csv"
+    bbaDF= pd.read_csv(bbaData)
+    sppTCount = bbaDF[i].sum()
+    bbaDF.set_index('roundelev', drop = False, append = False, inplace = True)
+    bbaDF.drop(bbaDF.index[bbaDF['roundelev'] > gapMin], inplace = True)
+    sppCount = bbaDF[i].sum()
+    perOcc = (sppCount/sppTCount)*100
+    elTable.loc[i, 'below_GAP_min(%)'] = perOcc
+    print(perOcc)
+elTable.to_csv(archiveCSV)
+elTable.to_csv(resultsCSV)
