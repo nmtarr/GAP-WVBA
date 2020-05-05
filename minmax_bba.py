@@ -15,7 +15,9 @@ projDir = "P:/Proj6/GAP-WVBA/"
 listDir = projDir + "Data/Specieslists/WV_AtlasCodes.csv"
 resultsCSV = projDir + "Results/elevation_summary.csv"
 codesBBA = projDir + "Data/Specieslists/BBA_sppcodes.csv"
+from datetime import datetime
 
+"""
 ## read sppList and Elev Summary dataframes
 sppList = pd.read_csv(listDir, dtype={'strUC': 'string',
                                       'strCommonName': 'string'}) 
@@ -53,18 +55,39 @@ print('\n')
 print(result2.head(10))
 print(len(result2))
 result2.to_csv(resultsCSV)
-
+"""
 #Where column name = loc, find max and min value in roundelev 
 #if value in spp column is greater than 0
 #code is non-functional in this section and needs work to complete
+timestamp = str(datetime.now(tz=None).strftime("%d%B%Y_%I%M%p"))
+archiveCSV = projDir + "/Results/Archive/elevation_" + timestamp + ".csv"
+elTable = pd.read_csv(resultsCSV, index_col = 'WV_species_id', 
+                      dtype={'WV_species_id': 'string'}) 
+for i in elTable.index[108:109]:
+    print(i)
+    bbaData= projDir + "Data/WVBBA_ALLDATA.csv"
+    bbaDF= pd.read_csv(bbaData)
+    bbaDF.set_index(i, drop = False, append = False, inplace = True)
+    bbaDF.drop(bbaDF.index[bbaDF[i] == 0], inplace = True)
+    sppMAX = bbaDF['roundelev'].max()
+    elTable.loc[i, 'WVBBA_max'] = sppMAX
+    print(sppMAX)
+    sppMIN = bbaDF['roundelev'].min()
+    elTable.loc[i, 'WVBBA_min'] = sppMIN
+    print(sppMIN)
+elTable.to_csv(archiveCSV)
+elTable.to_csv(resultsCSV)
+print("Done")
+
 elTable = pd.read_csv(resultsCSV, index_col = 'WV_species_id', 
                       dtype={'WV_species_id': 'string'}) 
 for i in elTable.index[0:]:
-    print(i)
-bbaData= projDir + "Data/WVBBA_ALLDATA.csv"
-bbaDF= pd.read_csv(bbaData)
-sppDF = bbaDF.loc[condition, i]
-sppMAX = sppDF.max(self, axis=None, skipna=None, level=None, numeric_only=None, **kwargs)
-elTable.loc[i, 'WVBBA_max'] = sppMAX
-sppMIN = sppDF.min(self, axis=None, skipna=None, level=None, numeric_only=None, **kwargs)
-elTable.loc[i, 'WVBBA_min'] = sppMAX
+    maxdiff = (((elTable.loc[i, 'WVBBA_max']) - (elTable.loc[i, 'GAP_max_map']))/(elTable.loc[i, 'GAP_max_map']))*100
+    mindiff = (((elTable.loc[i, 'GAP_min_map']) - (elTable.loc[i, 'WVBBA_min']))/(elTable.loc[i, 'GAP_min_map']))*100
+    #if maxdiff >0:
+    elTable.loc[i, 'above_GAP_max(%)'] = maxdiff
+    #if maxdiff <=0:
+    elTable.loc[i, 'below_GAP_min(%)'] = mindiff 
+elTable.to_csv(archiveCSV)
+elTable.to_csv(resultsCSV)
+

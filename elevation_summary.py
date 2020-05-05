@@ -28,8 +28,7 @@ import json
 import sciencebasepy as sb
 import os
 import glob
-import random
-from retrying import retry
+
 
 # Set paths to data
 projDir = "P:/Proj6/GAP-WVBA/"
