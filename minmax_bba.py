@@ -58,7 +58,6 @@ result2.to_csv(resultsCSV)
 """
 #Where column name = loc, find max and min value in roundelev 
 #if value in spp column is greater than 0
-#code is non-functional in this section and needs work to complete
 timestamp = str(datetime.now(tz=None).strftime("%d%B%Y_%I%M%p"))
 archiveCSV = projDir + "/Results/Archive/elevation_" + timestamp + ".csv"
 elTable = pd.read_csv(resultsCSV, index_col = 'WV_species_id', 
