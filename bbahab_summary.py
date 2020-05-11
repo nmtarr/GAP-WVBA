@@ -52,14 +52,3 @@ unstackdf = groupdf.unstack(level=-1)
 unstackdf.to_csv(archiveCSV)
 unstackdf.to_csv(resultsCSV)
 
-
-"""
-                                     '0-<50m:0-3 min': 'int',	
-                                     '0-<50m:>3-5 min': 'int',	
-                                     '0-<50m:>5-10min': 'int',	
-                                     '50-100m:0-3min': 'int',	
-                                     '50-100m:>3-5min': 'int',	
-                                     '50-100m:>5-10min': 'int',	
-                                     '≥100m or flyover:0-3min': 'int',	
-                                     '≥100m or flyover:>3-5min': 'int',	
-                                     '≥100m or flyover:>5-10min': 'int'
