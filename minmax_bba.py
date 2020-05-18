@@ -58,7 +58,6 @@ result2.to_csv(resultsCSV)
 """
 #Where column name = loc, find max and min value in roundelev 
 #if value in spp column is greater than 0
-#code is non-functional in this section and needs work to complete
 timestamp = str(datetime.now(tz=None).strftime("%d%B%Y_%I%M%p"))
 archiveCSV = projDir + "/Results/Archive/elevation_" + timestamp + ".csv"
 elTable = pd.read_csv(resultsCSV, index_col = 'WV_species_id', 
@@ -90,21 +89,26 @@ for i in elTable.index[0:]:
 elTable.to_csv(archiveCSV)
 elTable.to_csv(resultsCSV)
 """
+elTable.insert(18, "Species_OccuranceTotal", None)
+elTable.insert(19, "Species_OccOverMax", None)
+elTable.insert(20, "Species_OccUnderMin", None)
 
-for i in elTable.index[83:84]:  
+for i in elTable.index[0:]:  
     print(i)
     gapMax = elTable.loc[i, 'GAP_max_map']
     bbaData= projDir + "Data/WVBBA_ALLDATA.csv"
     bbaDF= pd.read_csv(bbaData)
     sppTCount = bbaDF[i].sum()
+    elTable.loc[i, 'Species_OccuranceTotal'] = sppTCount
     bbaDF.set_index('roundelev', drop = False, append = False, inplace = True)
     bbaDF.drop(bbaDF.index[bbaDF['roundelev'] < gapMax], inplace = True)
     sppCount = bbaDF[i].sum()
+    elTable.loc[i, 'Species_OccOverMax'] = sppCount
     perOcc = (sppCount/sppTCount)*100
     elTable.loc[i, 'above_GAP_max(%)'] = perOcc
     print(perOcc)
     
-for i in elTable.index[84:85]:  
+for i in elTable.index[0:]:  
     print(i)    
     gapMin = elTable.loc[i, 'GAP_min_map']
     bbaData= projDir + "Data/WVBBA_ALLDATA.csv"
@@ -113,8 +117,11 @@ for i in elTable.index[84:85]:
     bbaDF.set_index('roundelev', drop = False, append = False, inplace = True)
     bbaDF.drop(bbaDF.index[bbaDF['roundelev'] > gapMin], inplace = True)
     sppCount = bbaDF[i].sum()
+    elTable.loc[i, 'Species_OccUnderMin'] = sppCount
     perOcc = (sppCount/sppTCount)*100
     elTable.loc[i, 'below_GAP_min(%)'] = perOcc
     print(perOcc)
 elTable.to_csv(archiveCSV)
 elTable.to_csv(resultsCSV)
+
+
