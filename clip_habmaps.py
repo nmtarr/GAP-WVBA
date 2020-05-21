@@ -24,14 +24,11 @@ clipDir = dataDir + 'habmaps'
 listDir = dataDir + 'Specieslists/WV_AtlasCodes.csv'
 wvBoundary = projDir + 'WV_GAPcover/2001/WVworkspace/wv_bound.shp'
 
-
 # Get a list of GAP species codes to process
-
 shapefile = fiona.open(wvBoundary)
 shapes = [feature['geometry'] for feature in shapefile]
 rasterio.Env(GDAL_TIFF_INTERNAL_MASK=True)  
 df = pd.read_csv(listDir, dtype={'strUC': 'string'}) 
-#i = "bWOTHx"  
 for i in df['strUC'] : 
     try:
         i = i[:1] + i[1:5].upper() + i[-1:]
@@ -53,7 +50,3 @@ for i in df['strUC'] :
     except Exception as e:
         print('Something went wrong with ' + i + '_wv') 
         print(e)
-
-
-
-

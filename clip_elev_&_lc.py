@@ -1,136 +1,94 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon Mar 16 17:09:58 2020
+Created on Wed Apr  8 11:42:47 2020
 
-@author: nmtarr
+@author: Jessica Page Jordan
 
-Description: Similar to clip_habmaps but clip the elevation and land cover
-rasters to WV.  Save in "/Data"
+Creates WV subsets of GAP elevation and land cover layers, by 
+clipping, copying, and mosaicing regional layers.
 """
+#execfile("C:/Users/Jessica/GAP-WVBA/AppendSysPaths3.py").read()
+#use the following to import arcpy when using command propt
+import sys
+sys.path.append('C:/Program Files (x86)/ArcGIS/Desktop10.4/bin64')
+sys.path.append('C:/Program Files (x86)/ArcGIS/Desktop10.4/ArcPy')
+sys.path.append('C:/Program Files (x86)/ArcGIS/Desktop10.4/ArcToolBox/Scripts')
+
+import arcpy
+arcpy.env.overwriteOutput = True
+from arcpy import env
+from arcpy.sa import *
+arcpy.CheckOutExtension("Spatial")
+
 # Paths
 projDir = "P:/Proj6/GAP-WVBA/"
 gapDataDir = "P:/Proj3/USGap/Vert/Model/data/"
-#seElev = gapDataDir + "Elev/elev_se"
-#neElev = gapDataDir + "Elev/elev_ne"
-#seLC = gapDataDir + "LandCover/lcgap_se"
-#neLC = gapDataDir + "LandCover/lcgap_ne"
-seElev = gapDataDir + "Temp/elev_se.tif"
-neElev = gapDataDir + "Temp/elev_ne.tif"
-seLC = gapDataDir + "Temp/lcgap_se.tif"
-neLC = gapDataDir + "Temp/lcgap_ne.tif"
-usElev= gapDataDir + "Temp/elev"
-usLC= gapDataDir + "Temp/lcgap"
-Elev = gapDataDir + "Elev/"
-LCov = gapDataDir + "LandCover/"
-wvBoundary = projDir + 'WV_GAPcover/2001/WVworkspace/wv_bound.shp'
+fromLoc = "P:/Proj3/USGap/Vert/Model/data/Temp/"
+toLoc = projDir + 'WV_GAPcover/2001/WVworkspace/'
+arcpy.env.workspace = fromLoc
+arcpy.env.workspace = toLoc
+arcpy.env.snapRaster = fromLoc + "snapgrid"
+neMask = fromLoc + "maskclp_ne"
+seMask = fromLoc + "maskclp_se"
+seElev = fromLoc + "elev_se"
+neElev = fromLoc + "elev_ne"
+seLC = fromLoc + "lcgap_se"
+neLC = fromLoc + "lcgap_ne"
 
-import fiona
-import rasterio
-import rasterio.mask
-import rasterio.drivers
+# Mask regional data to exclude buffer
+# Mask neElev   
+outExtractByMask = arcpy.sa.ExtractByMask(neElev, neMask)
+neEl_clip = toLoc + 'neElclip'
+outExtractByMask.save(neEl_clip)
+print("neElev clipped succesfully")
+# Mask seElev    
+outExtractByMask = arcpy.sa.ExtractByMask(seElev, seMask)
+seEl_clip = toLoc + 'seElclip'
+outExtractByMask.save(seEl_clip)
+print("seElev clipped succesfully")
+# Mask neLC    
+outExtractByMask = arcpy.sa.ExtractByMask(neLC, neMask)
+neLC_clip = toLoc + 'neLCclip'
+outExtractByMask.save(neLC_clip)
+print("neLC clipped succesfully")
+# Mask seLC   
+outExtractByMask = arcpy.sa.ExtractByMask(seLC, seMask)
+seLC_clip = toLoc + 'seLCclip'
+outExtractByMask.save(seLC_clip)
+print("neLC clipped succesfully")
+
+# Mosaic together NE and SE regions
+ElRast = arcpy.ListRasters("*" + "Elclip")
+eElev= toLoc + "elev"
+arcpy.MosaicToNewRaster_management(ElRast, toLoc, "elev", "", "", "", 1,) 
+print("Elevation mosaic successful") 
+
+LCRast = arcpy.ListRasters("*" + "LCclip")
+eLC= fromLoc + "lcgap"
+arcpy.MosaicToNewRaster_management(LCRast, toLoc, "lcgap", "", "", "", 1,)  
+print("Land Cover mosaic successful")
+
+# Clip mosaiced rasters to W.Virginia
+wvBoundary = toLoc + 'wv_bound.shp'
+outExtractByMask = arcpy.sa.ExtractByMask(eElev, wvBoundary)
+wvElev = toLoc + 'wvElev'
+outExtractByMask.save(wvElev)
+print("neLC clipped succesfully")
+
+outExtractByMask = arcpy.sa.ExtractByMask(eLC, wvBoundary)
+wvLC = toLoc + 'wvLC'
+outExtractByMask.save(wvLC)
+print("neLC clipped succesfully")
+
 
 """
-#Mosaic together NE and SE Landcover data,  should be used with caution as the
-#datasets do not match along the edges and this code prioritizes the SE data
+arcpy.management.BuildPyramidsandStatistics(toLoc, skip_existing=True)
+newRas = arcpy.ListRasters()
+check_model = gp.gaprasters.CheckModelTable(newRas)
+check_prop = gp.gaprasters.CheckRasterProperties(newRas)
 
-import rasterio.merge
-from rasterio.merge import merge
-
-
-src3 = rasterio.open(seElev)
-src4 = rasterio.open(neElev)
-shapefile = fiona.open(wvBoundary)
-shapes = [feature['geometry'] for feature in shapefile]
-
-#Height and Width manually determind from the bounding box. Input was rounded
-#down the the nearest number to determine row and column count
-srcs_to_mosaic = [src3, src4]
-bounds= [-58528.37890609764, 262166.4984406226, 
-         2262947.646331542, 3013025.0470320634]
-width= ((src3.bounds.left *-1) + (src4.bounds.right))/30.000000000000007
-height= ((src4.bounds.top) - (src3.bounds.bottom))/30.000000000000007
-
-arr, out_trans = merge(srcs_to_mosaic, bounds, "", (-int(32768)))
-out_mosaic = Elev + "eElev.tif"
-with rasterio.open(out_mosaic, "w", "GTiff", 77382, 
-                   91695, 1, src3.crs, out_trans, 
-                   "int16", (-int(32768)), "", compress= "LZW") as dest:
-    dest.write(arr.astype("int16"))
-    
-rasterio.Env(GDAL_TIFF_INTERNAL_MASK=True)  
-with rasterio.open(Elev + "eElev.tif") as src1:
-    out_image, out_transform = rasterio.mask.mask(src1, shapes, crop=True)
-    out_meta = src1.meta
-    print(src1.meta)
-    out_meta.update({"driver": "GTiff", "height": out_image.shape[1], 
-                     "width": out_image.shape[2], 
-                     "transform": out_transform})
-    out_file = Elev + "wvElev.tif"
-    with rasterio.open(out_file, "w", **out_meta) as dest:
-        dest.write(out_image)
-print('WV Clipped Succesfully!!')  
- 
-
-# Mosiac together NE and SE Landcover data and clip to West Virginia
-src5 = rasterio.open(seLC)
-src6 = rasterio.open(neLC)
-shapefile = fiona.open(wvBoundary)
-shapes = [feature['geometry'] for feature in shapefile]
-
-srcs_to_mosaic = [src5, src6]
-bounds= [-58521.226999999955, 262172.078, 
-         2262947.6463315417, 3013025.047032063]
-width= ((src5.bounds.left *-1) + (src6.bounds.right))/30.000000000000007
-height= ((src6.bounds.top) - (src5.bounds.bottom))/30.000000000000007
-
-arr, out_trans = merge(srcs_to_mosaic, bounds, "", (-int(32768)))
-out_mosaic = LCov + "eLCov.tif"
-with rasterio.open(out_mosaic, "w", "GTiff", 77382, 
-                   91695, 1, src5.crs, out_trans, 
-                   "int16", (-int(32768)), "", compress= "LZW") as dest:
-    dest.write(arr.astype("int16"))
-    
-rasterio.Env(GDAL_TIFF_INTERNAL_MASK=True)  
-with rasterio.open(LCov + "eLCov.tif") as src2:
-    out_image2, out_transform2 = rasterio.mask.mask(src2, shapes, crop=True)
-    out_meta2 = src2.meta
-    print(src2.meta)
-    out_meta2.update({"driver": "GTiff", "height": out_image2.shape[1], 
-                     "width": out_image2.shape[2], 
-                     "transform": out_transform2})
-    out_file2 = LCov + "wvLCov.tif"
-    with rasterio.open(out_file2, "w", **out_meta2) as dest:
-        dest.write(out_image2)
-print('WV Clipped Succesfully!!') 
+for new in check_model["CursorProblem"]:
+    arcpy.management.Delete(new)
+    print(new)
 """
 
-
-#Option to skip mosiac steps and clip using the national datasets 
-#(other code must be commented out)
-shapefile = fiona.open(wvBoundary)
-shapes = [feature['geometry'] for feature in shapefile]
-rasterio.Env(GDAL_TIFF_INTERNAL_MASK=True)  
-
-with rasterio.open(usElev) as src1:
-    out_image, out_transform = rasterio.mask.mask(src1, shapes, crop=True)
-    out_meta = src1.meta
-    print(src1.meta)
-    out_meta.update({"driver": "GTiff", "height": out_image.shape[1], 
-                     "width": out_image.shape[2], 
-                     "transform": out_transform})
-    out_file = Elev + "wvElev_us.tif"
-    with rasterio.open(out_file, "w", **out_meta) as dest:
-        dest.write(out_image)
-print('WV Clipped Succesfully!!')  
-
-with rasterio.open(usLC) as src2:
-    out_image2, out_transform2 = rasterio.mask.mask(src2, shapes, crop=True)
-    out_meta2 = src2.meta
-    print(src2.meta)
-    out_meta2.update({"driver": "GTiff", "height": out_image2.shape[1], 
-                     "width": out_image2.shape[2], 
-                     "transform": out_transform2})
-    out_file2 = LCov + "wvLCov_us.tif"
-    with rasterio.open(out_file2, "w", **out_meta2) as dest:
-        dest.write(out_image2)
-print('WV Clipped Succesfully!!') 

@@ -1,3 +1,11 @@
+projDir = "P:/Proj6/GAP-WVBA/"
+dataDir = projDir + "Data/"
+rangDir = projDir + "Temp/"
+resultsDir = projDir + "Results/"
+clipDir = dataDir + 'habmaps'
+listDir = dataDir + 'Specieslists/WV_AtlasCodes.csv'
+wvBoundary = projDir + 'WV_GAPcover/2001/WVworkspace/wv_bound.shp'
+
 def download_GAP_range_CONUS2001v1(gap_id, toDir):
     """
     Downloads GAP Range CONUS 2001 v1 file and returns path to the unzipped
@@ -30,7 +38,7 @@ def download_GAP_range_CONUS2001v1(gap_id, toDir):
     return rng_zip.replace('.zip', '')
 
 
-def lc_crosswalker(systems, from, to):
+def lc_crosswalker(systems, fro, to):
     """
     Crosswalks a list of land cover classes from one classification to another.
 

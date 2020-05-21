@@ -5,9 +5,9 @@ Created on Wed Apr 15 11:40:12 2020
 @author: Jessica
 
 Environmental Req: Python 2.7, numpy, pandas, sciencebasepy, arcGIS 10.4
-
+"""
+"""
 # Create a function for retrieving the elevation min or max from hab map
-
 def elev_from_map(gap_id, parameter):
 
     Assess GAP habitat map against elevation raster to determine the max
@@ -83,7 +83,3 @@ for i in elTable.index[0:]:
             os.remove(g)
     except Exception as e:
         print(e)
-
-
-
-

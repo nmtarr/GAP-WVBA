@@ -9,10 +9,8 @@ Description: Clips CONUS GAP habitat maps (summer) to the WV boundary.
 import os, sys, arcpy, arcgisscripting
 from arcpy import env  
 from arcpy.sa import *
-gp=arcgisscripting.create(9.3)
-
+# gp=arcgisscripting.create(9.3)
 arcpy.env.overwriteOutput = 1
-
 
 # Set paths to data
 projDir = "P:/Proj6/GAP-WVBA/"
@@ -50,10 +48,8 @@ for uid in uniqueIDs:
         #add repo code here, ask Nathan 
         
         #save clipped map to clipDir with spp code
-        arcpy.Clip_management(valueRaster,"",clipDir + \\str(uid).tif,"wvBoundary","","ClippingGeometry", "NO_MAINTAIN_EXTENT")  #value raster is a placeholder for the current downloaded hab data
-    except:																									##Print when route region group is not successfully performed
+        arcpy.Clip_management(valueRaster,"",clipDir + \\str(uid).tif,"wvBoundary","","ClippingGeometry", "NO_MAINTAIN_EXTENT")  
+        #value raster is a placeholder for the current downloaded hab data
+    except:																									
+        ## Print when route region group is not successfully performed
         print "Something went wrong with " + str(uid) + "."  
-
-
-
-

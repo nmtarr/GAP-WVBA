@@ -84,7 +84,7 @@ elTable = pd.read_csv(resultsCSV, index_col = 'GAP_code', dtype={'GAP_code': 'st
                                      'common_name': 'string'})                        
 i= elTable.index[57:]
 for i in elTable.index[57:]:
-    gap_id = i[0] + i[1:5].upper() + i[5]      
+    gap_id = i[0] + i[1:5].upper() + i[5]
     # Search for gap model item in ScienceBase
     print(str("Retreiving data for ") + gap_id)
     item_search = '{0}_CONUS_HabModel_2001v1.json'.format(gap_id)
@@ -149,7 +149,7 @@ for i in elTable.index[0:]:
                 SE_minElev = modely6['intElevMin']
                 elTable.loc[i,'GAP_min_SE'] = SE_minElev   
             if gap_id + '-y6' and gap_id + '-s6' not in mods.keys():
-                   elTable.loc[i,'GAP_max_SE'] = str("None specified") 
+                   elTable.loc[i,'GAP_max_SE'] = str("None specified")
                    elTable.loc[i,'GAP_min_SE'] = str("None specified")
             if SE_maxElev is None:
                     elTable.loc[i,'GAP_max_SE'] = "None" 
@@ -162,7 +162,7 @@ for i in elTable.index[0:]:
         print(str("Failure retreiving data for ") + gap_id)
         print(e)        
 elTable.to_csv(archiveCSV)
-elTable.to_csv(resultsCSV)        
+elTable.to_csv(resultsCSV)
 #files = glob.glob(toDir + '*')
 #for f in files:
 #    os.remove(f)
