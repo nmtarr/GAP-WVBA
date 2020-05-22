@@ -82,6 +82,7 @@ timestamp = str(datetime.now(tz=None).strftime("%d%B%Y_%I%M%p"))
 archiveCSV = projDir + "/Results/Archive/elevation_" + timestamp + ".csv"
 elTable = pd.read_csv(resultsCSV, index_col = 'GAP_code', dtype={'GAP_code': 'string', 
                                      'common_name': 'string'})                        
+"""
 i= elTable.index[57:]
 for i in elTable.index[57:]:
     gap_id = i[0] + i[1:5].upper() + i[5]
@@ -98,7 +99,7 @@ for i in elTable.index[57:]:
         if not f.endswith('HabModel_2001v1.json'):
             os.remove(f)
 print("Model retreived for " + gap_id)
-
+"""
 # Read in the json of the model
 for i in elTable.index[0:]:
     gap_id = i[0] + i[1:5].upper() + i[5]  
@@ -123,13 +124,13 @@ for i in elTable.index[0:]:
                 elTable.loc[i,'GAP_max_NE'] = NE_maxElev
                 NE_minElev = modely3['intElevMin']
                 elTable.loc[i,'GAP_min_NE'] = NE_minElev   
-            if gap_id + '-y3' and gap_id + '-s3' not in mods.keys():
-                   elTable.loc[i,'GAP_max_NE'] = str("None specified") 
-                   elTable.loc[i,'GAP_min_NE'] = str("None specified")
+            if gap_id + '-y3' not in mods.keys() and gap_id + '-s3' not in mods.keys():
+                   elTable.loc[i,'GAP_max_NE'] = str("Blank") 
+                   elTable.loc[i,'GAP_min_NE'] = str("Blank")
             if NE_maxElev is None:
-                    elTable.loc[i,'GAP_max_NE'] = "None" 
+                    elTable.loc[i,'GAP_max_NE'] = "Null" 
             if NE_minElev is None:
-                    elTable.loc[i,'GAP_min_NE'] = "None"                      
+                    elTable.loc[i,'GAP_min_NE'] = "Null"                      
             print(str("Elevation data filled for") + gap_id)
         except Exception as e: 
             print(str("Failure writing ne_intElev data for") + gap_id) 
@@ -148,13 +149,13 @@ for i in elTable.index[0:]:
                 elTable.loc[i,'GAP_max_SE'] = SE_maxElev
                 SE_minElev = modely6['intElevMin']
                 elTable.loc[i,'GAP_min_SE'] = SE_minElev   
-            if gap_id + '-y6' and gap_id + '-s6' not in mods.keys():
-                   elTable.loc[i,'GAP_max_SE'] = str("None specified")
-                   elTable.loc[i,'GAP_min_SE'] = str("None specified")
+            if gap_id + '-y6' not in mods.keys() and gap_id + '-s6' not in mods.keys():
+                   elTable.loc[i,'GAP_max_SE'] = str("Blank")
+                   elTable.loc[i,'GAP_min_SE'] = str("Blank")
             if SE_maxElev is None:
-                    elTable.loc[i,'GAP_max_SE'] = "None" 
+                    elTable.loc[i,'GAP_max_SE'] = "Null" 
             if SE_minElev is None:
-                    elTable.loc[i,'GAP_min_SE'] = "None"   
+                    elTable.loc[i,'GAP_min_SE'] = "Null"   
         except Exception as e: 
             print(str("Failure retreiving se_intElev data for") + gap_id)
             print (e)                
