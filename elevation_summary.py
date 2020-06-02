@@ -128,9 +128,9 @@ for i in elTable.index[0:]:
                    elTable.loc[i,'GAP_max_NE'] = str("Blank") 
                    elTable.loc[i,'GAP_min_NE'] = str("Blank")
             if NE_maxElev is None:
-                    elTable.loc[i,'GAP_max_NE'] = "Null" 
+                    elTable.loc[i,'GAP_max_NE'] = "NULL" 
             if NE_minElev is None:
-                    elTable.loc[i,'GAP_min_NE'] = "Null"                      
+                    elTable.loc[i,'GAP_min_NE'] = "NULL"                      
             print(str("Elevation data filled for") + gap_id)
         except Exception as e: 
             print(str("Failure writing ne_intElev data for") + gap_id) 
@@ -153,9 +153,9 @@ for i in elTable.index[0:]:
                    elTable.loc[i,'GAP_max_SE'] = str("Blank")
                    elTable.loc[i,'GAP_min_SE'] = str("Blank")
             if SE_maxElev is None:
-                    elTable.loc[i,'GAP_max_SE'] = "Null" 
+                    elTable.loc[i,'GAP_max_SE'] = "NULL" 
             if SE_minElev is None:
-                    elTable.loc[i,'GAP_min_SE'] = "Null"   
+                    elTable.loc[i,'GAP_min_SE'] = "NULL"   
         except Exception as e: 
             print(str("Failure retreiving se_intElev data for") + gap_id)
             print (e)                
