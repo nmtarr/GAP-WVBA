@@ -4,8 +4,10 @@ pd.set_option('display.width', 1000)
 pd.set_option('display.max_colwidth', 400)
 pd.set_option('display.max_rows', 400)
 pd.set_option('display.max_columns', 10)
+import repo_functions as fun
 
 #projDir = "P:/Proj6/GAP-WVBA/Data/"
+projDir = fun.projDir
 projDir = "C:/Users/jhpage/Data/Specieslists/"
 atlas = projDir + "WVAtlasSPP.csv"
 gap = projDir + "Gap_birds_WV.csv"

@@ -1,10 +1,15 @@
-projDir = "P:/Proj6/GAP-WVBA/"
+projDir = "P:/Proj6/USGAP-WVBBA/"
 dataDir = projDir + "Data/"
 rangDir = projDir + "Temp/"
 resultsDir = projDir + "Results/"
 clipDir = dataDir + 'habmaps'
 listDir = dataDir + 'Specieslists/WV_AtlasCodes.csv'
 wvBoundary = projDir + 'WV_GAPcover/2001/WVworkspace/wv_bound.shp'
+
+import pandas as pd
+WV_pc_site = pd.read_excel(io=dataDir + "WVBBA_DATA.xlsx", sheet_name="all data")
+WV_pc_site_spp = pd.read_excel(io=dataDir + "WVBBA_DATA.xlsx", sheet_name="HABDATA_for_newCHART")
+WV_hab_labels = pd.read_excel(io=dataDir + "WVBBA_DATA.xlsx", sheet_name="Habitat type")
 
 def download_GAP_range_CONUS2001v1(gap_id, toDir):
     """

@@ -1,5 +1,0 @@
-name: GAP-WVBA
-channels:
-  - conda-forge
-  - defaults
-prefix: C:\Users\jhpage\AppData\Local\Continuum\miniconda3\envs\GAP-WVBA
