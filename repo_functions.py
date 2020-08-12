@@ -10,6 +10,7 @@ import pandas as pd
 WV_pc_site = pd.read_excel(io=dataDir + "WVBBA_DATA.xlsx", sheet_name="all data")
 WV_pc_site_spp = pd.read_excel(io=dataDir + "WVBBA_DATA.xlsx", sheet_name="HABDATA_for_newCHART")
 WV_hab_labels = pd.read_excel(io=dataDir + "WVBBA_DATA.xlsx", sheet_name="Habitat type")
+WV_cap_spp = pd.read_excel(io=dataDir + "WVBBA_DATA.xlsx", sheet_name="CAPTIONS")
 
 def GAP_spp_code(name):
     '''
