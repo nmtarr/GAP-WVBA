@@ -17,7 +17,7 @@ WV = pd.read_csv(fun.resultsDir + "WV_spp_lc_detections.csv", header=0)
 
 # Load WV tally of records per cover type
 WV_tally = pd.read_csv(fun.dataDir + "LandCover/WV_habitat_entries.csv",
-                            header=0)
+                       header=0)
 
 # Load land cover crosswalk
 cross = pd.read_csv(fun.dataDir + "LandCover/land_cover_crosswalk.csv", 
@@ -34,7 +34,7 @@ print(GAP_types)
 WVBBA_types = fun.WVBBA_detected_in(species)
 print(WVBBA_types)
 
-# which GAP associations were supported? -------------------------------------
+# Which GAP associations were supported? -------------------------------------
 validated = set([])
 for code in WVBBA_types:
     print(code)
