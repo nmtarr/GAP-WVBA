@@ -23,6 +23,7 @@ WV_tally = pd.read_csv(fun.dataDir + "LandCover/WV_habitat_entries.csv",
 cross = pd.read_csv(fun.dataDir + "LandCover/land_cover_crosswalk.csv", 
                     header=0) 
 
+
 # Which GAP cover types were sampled? HOW TO DO THIS??????????????????????????
 
 # Define a species -----------------------------------------------------------
@@ -30,24 +31,33 @@ species = "Acadian Flycatcher"
 
 # Return associations --------------------------------------------------------
 GAP_types = fun.GAP_mapped_in(species)
+print("\nGAP")
 print(GAP_types)
 WVBBA_types = fun.WVBBA_detected_in(species)
+print("\nWVBBA")
 print(WVBBA_types)
 
 # Which GAP associations were supported? -------------------------------------
+'''
+For the species, get the WVBBA cover types it was detected in.
+For each cover type, gather a list of GAP types linked to it.
+Determine the count of GAP types linked to the WVBBA type for use in weighting. 
+'''
 validated = set([])
 for code in WVBBA_types:
+    code = code.upper() #  NOT WORKING !!!!!!! for letter ones.
     print(code)
 
     # WVtoGAP(code):
-    GAPs = (pd.read_csv(fun.dataDir + "LandCover/land_cover_crosswalk.csv", 
-                        header=0)
-             [lambda x: x['wv_code_fine'] == code]
+    GAPs = (cross[lambda x: x['wv_code_fine'] == code]
              ['GAP_code']
              .unique())
     GAPs = [str(int(x)) for x in GAPs]
+    print(GAPs)
+    print(len(GAPs))
+    match = {x[len(GAPs)] for x in GAPs}
     # return GAPs
-    validated = set(GAPs) | validated
+    validated = match | validated
 print(validated)
 
 
