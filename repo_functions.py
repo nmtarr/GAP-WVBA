@@ -12,6 +12,10 @@ WV_pc_site_spp = pd.read_excel(io=dataDir + "WVBBA_DATA.xlsx", sheet_name="HABDA
 WV_hab_labels = pd.read_excel(io=dataDir + "WVBBA_DATA.xlsx", sheet_name="Habitat type")
 WV_cap_spp = pd.read_excel(io=dataDir + "WVBBA_DATA.xlsx", sheet_name="CAPTIONS")
 
+def wv_lc_code_cleaner(code):
+        code = code.lower().replace('"', '')
+        return code
+
 def GAP_spp_code(name):
     '''
     Return the GAP species code for the common name provided.
