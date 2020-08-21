@@ -31,17 +31,15 @@ def WVBBA_detected_in(species):
     '''
     Returns list of cover types WVBBA found species in.
     '''
-    WV = pd.read_csv(resultsDir + "WV_spp_lc_detections.csv", header=0) 
+    WV = pd.read_csv(resultsDir + "WV_spp_lc_detections.csv", header=0)
+    WV.replace('1"', '1')
     spp = GAP_spp_code("Acadian Flycatcher")
     WV_types = (WV
-                [lambda x: x['species'] == spp[1:5]]
-                .T
-                .rename(columns={1: 'detections'})
-                .iloc[1:]
-                [lambda x: x['detections'] > 0]
-                .index 
-                )
-    WV_types = list(WV_types)
+            [lambda x: x['species'] == spp[1:5]]
+            .T
+            .rename(columns={1: 'detections'})
+            .iloc[1:]
+            [lambda x: x['detections'] > 0])
     return WV_types
 
 def GAP_mapped_in(species):
