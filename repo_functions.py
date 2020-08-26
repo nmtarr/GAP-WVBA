@@ -27,21 +27,120 @@ def GAP_spp_code(name):
     code = code[0] + code[1:5].upper() + code[5]
     return code
 
+def cross_to_GAP(species, crosswalk):
+    '''
+    Gathers and matches WVBBA cover type associations to GAP types, assesses
+    support for GAP associations in WVBBA data.
+    '''
+   
+    # Return cover associations -------------------------------------------------------
+    GAP_types = GAP_mapped_in(species)
+    GAP_types = [str(x) for x in GAP_types]
+    GAP_types = pd.DataFrame(index=GAP_types, columns=['GAP_associated'])
+    GAP_types['GAP_associated'] = 1
+    print("\nSystem associations in the GAP model")
+    print(GAP_types
+          .merge(crosswalk, left_index=True, right_on='GAP_code', how='inner')
+          [['GAP_code', 'GAP_name', 'GAP_associated']]
+          .set_index(['GAP_code'])
+          [['GAP_name']])
+    
+    WVBBA_types = WVBBA_detected_in(species)
+    WVBBA_types.index = [x.lower() for x in WVBBA_types.index]
+    print("\nWVBBA detections by WVBBA habitat type")
+    print(WVBBA_types
+          .merge(crosswalk, left_index=True, right_on='wv_code_fine', how='inner')
+          [['wv_code_fine', 'wv_name_fine', 'detections']]
+          .set_index(['wv_code_fine'])
+          .drop_duplicates())
+    # Which GAP types are linked to WVBBA associations? --------------------------
+    '''
+    Create a table with crosswalk info for the species
+    Rows for GAP types species was mapped in or detected in.
+    Column for confidence of cross walk (WV to GAP)
+    Column for number of GAP systems WV type was linked to
+    Column denoting whether GAP mapped species in type
+    Column for number of detections related to the type
+    '''
+    GAP_linked = pd.DataFrame()
+    GAP_linked.index.name="GAP_code"
+    sp_unmatched = {}
+    
+    for code in WVBBA_types.index:
+        detections = WVBBA_types.loc[code, 'detections']
+        GAPs = (crosswalk[lambda x: x['wv_code_fine'] == code]
+                 ['GAP_code']
+                 .unique())
+        GAPs = [str(int(x)) for x in GAPs]
+        match_n = len(GAPs)
+        if match_n != 0:
+            for gap in GAPs:
+                confi = (crosswalk[(crosswalk['GAP_code'] == gap) &
+                              (crosswalk['wv_code_fine'] == code)]
+                         ["confidence"]
+                         .iloc[0])
+                name = (crosswalk[crosswalk['wv_code_fine'] == code]['wv_name_fine']
+                       .unique()[0])
+                GAP_linked.loc[gap, 'cross_confidence'] = confi
+                GAP_linked.loc[gap, 'cross_matches'] = match_n
+                GAP_linked.loc[gap, 'detections'] = detections
+                GAP_linked.loc[gap, 'wv_code_fine'] = code
+                GAP_linked.loc[gap, 'wv_name_fine'] = name
+        else:
+            sp_unmatched[code] = detections
+    
+    result_sp = (GAP_types.merge(GAP_linked, left_index=True, right_index=True, 
+                       how='outer')
+          .fillna(0))
+    result_sp.index.name = 'GAP_code'
+    # Calculate a measure of support for the link
+    result_sp["link_strength"] = result_sp["cross_confidence"]/result_sp["cross_matches"]
+    result_sp.fillna(0, inplace=True)
+    
+    # Get names back in table ----------------------------------------------------
+    names = crosswalk[['GAP_code', 'GAP_name']].drop_duplicates()
+    result_sp = result_sp.merge(names, right_on='GAP_code', left_on='GAP_code', 
+                                how='inner')
+    
+    # Categorize support ---------------------------------------------------------
+    support_categories = ['low', 'med', 'high']
+    bins = [0, 0.49, 0.80, 1]
+    support = pd.cut(result_sp['link_strength'], bins, labels=support_categories)
+    result_sp['support'] = support
+    
+    # Evaluations ----------------------------------------------------------------
+    add = result_sp[(result_sp['support'] == 'high') &
+                    (result_sp['detections'] > 1) &
+                    (result_sp['GAP_associated'] == 0.0)]
+    result_sp.loc[result_sp.index.isin(add.index) == True, 'evaluation'] = 'add_association'
+    
+    valid = result_sp[(result_sp['support'] == 'high') &
+                    (result_sp['detections'] > 1) &
+                    (result_sp['GAP_associated'] == 1.0)]
+    result_sp.loc[result_sp.index.isin(valid.index) == True, 'evaluation'] = 'valid'
+    
+    GAP_n = len(GAP_types)
+    valid_n = len(result_sp[result_sp['evaluation'] == 'valid'])
+    print("{1} of {0} GAP ecological system associations were validated."
+          "".format(GAP_n, valid_n))
+
+    return result_sp, GAP_linked, sp_unmatched, GAP_types, WVBBA_types
+
 def WVBBA_detected_in(species):
     '''
     Returns list of cover types WVBBA found species in.
     '''
     WV = pd.read_csv(resultsDir + "WV_spp_lc_detections.csv", header=0)
     WV.replace('1"', '1')
-    spp = GAP_spp_code("Acadian Flycatcher")
+    spp = GAP_spp_code(species)
     WV_types = (WV
             [lambda x: x['species'] == spp[1:5]]
-            .T
-            .rename(columns={1: 'detections'})
-            .iloc[1:]
-            [lambda x: x['detections'] > 0])
+            .T)
+    WV_types = (WV_types.rename(columns={WV_types.columns[0]: 'detections'})
+                .iloc[1:]
+                [lambda x: x['detections'] > 0])
     return WV_types
-
+        
 def GAP_mapped_in(species):
     '''
     Returns list of GAP land cover class codes species was mapped in.

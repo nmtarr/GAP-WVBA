@@ -30,7 +30,8 @@ Across species:
 Issues -- invalid habitat codes recorded 
 """
 # Define a species ----------------------------------------------------------
-species = "Louisiana Waterthrush"
+species = "Yellow-breasted Chat"
+print(species)
 
 import pandas as pd
 import repo_functions as fun
