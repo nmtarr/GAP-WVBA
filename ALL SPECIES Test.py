@@ -5,11 +5,10 @@
 # Nathan Tarr and Jessie Jordan
 # 
 # ## Cover type associations in West Virginia
-# We investigated the agreement between WV Breeding Bird Atlas (2011-2015) and USGS Gap Analysis Project data on 
+# We investigated the agreement between WV Breeding Bird Atlas (2011-2015) and USGS Gap Analysis Project data 
 
 
-# In[12]:
-
+# In[11]:
 
 import pandas as pd
 import numpy as np
@@ -19,7 +18,7 @@ pd.set_option('display.max_colwidth', 400)
 pd.set_option('display.max_rows', 400)
 pd.set_option('display.max_columns', 15)
 
-# In[13]:
+# In[21]:
 # Call species lists and generate empty dataframes-----------------------------
 specieslist = (pd.read_csv(fun.dataDir + "/SpeciesLists/WV_GAP_Atlas.csv", 
                            index_col ='strCommonName', header=0))
@@ -35,11 +34,13 @@ allunmatch = pd.DataFrame()
 # Load land cover crosswalk - slow loading for some reason
 cross = pd.read_csv(fun.dataDir + "LandCover/land_cover_crosswalk.csv", 
                     header=0, dtype={'GAP_code': str}) 
+
 # In[14]:
 for species in specieslist.index[0:]:
     try:
         # Perform crosswalk of detections from WV -> USGAP
-        master, GAP_linked, unmatched, gap_types, wv_types = fun.cross_to_GAP(species, cross)
+        master, GAP_linked, unmatched, gap_types, wv_types = fun.cross_to_GAP(species, 
+                                                    cross, print_tables=False)
 
         #Insert Species name into first column
         
@@ -85,23 +86,22 @@ for species in specieslist.index[0:]:
 print(mastdf)
 print(masteval)
 
-
+#%%
 #The following: drop na does make a slight difference on final results though 
 #the main purpose was to clean excess NaN records for bird not in WVBBA        
 mastdf = mastdf.dropna()
 masteval = masteval.dropna()
+#Covert type to numerical for aggregation
 masteval = masteval.astype({'GAP_types': 'int32'})
 
+
+#%%
 #Create pivot table summarizing the validity of WVBBA habitat detections
 pivdf = mastdf.pivot_table(index = mastdf.index,
                            aggfunc = {'detections' : [np.mean, sum, lambda x: len(x.unique())]},
                            fill_value = 0).sort_index()
 print(pivdf) 
 
-#Create pivot table summarizing the proportion of GAP systems validated 
-piveval = masteval.pivot_table(index = masteval.index,
-                           aggfunc = {'GAP_types' : [np.mean, sum, lambda x: len(x.unique())]},
-                           fill_value = 0).sort_index()
 
 #Plot pie chart of total detections
 plt1 = pivdf.drop(['Total detections']).plot(y=('detections',        'sum'), 
@@ -114,6 +114,12 @@ plt2 = pivdf.drop(['Total detections']).plot(y=('detections',        'mean'),
                                              kind='barh', legend=False, 
                     title = "Average Species Detections")   
 
+#%% 
+
+#Create pivot table summarizing the proportion of GAP systems validated 
+piveval = masteval.pivot_table(index = masteval.index,
+                           aggfunc = {'GAP_types' : [np.mean, sum, lambda x: len(x.unique())]},
+                           fill_value = 0).sort_index()
 print(piveval)
 plt3 = piveval.plot(y=('GAP_types',        'sum'), kind='barh', legend=False, 
                     title = "Total species GAP associations")    
