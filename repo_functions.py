@@ -29,12 +29,38 @@ def GAP_spp_code(name):
     code = code[0] + code[1:5].upper() + code[5]
     return code
 
+def WVBBA_detected_in(species):
+    '''
+    Returns list of cover types WVBBA found species in.
+    '''
+    WV = pd.read_csv(resultsDir + "WV_spp_lc_detections.csv", header=0)
+    spp = GAP_spp_code(species)
+    WV_types = (WV
+                [lambda x: x['species'] == spp[1:5]]
+                .T)
+    WV_types = (WV_types.rename(columns={WV_types.columns[0]: 'detections'})
+                .iloc[1:]
+                [lambda x: x['detections'] > 0])
+    return WV_types
+
+def GAP_mapped_in(species):
+    '''
+    Returns list of GAP land cover class codes species was mapped in.
+    Format species like "Acadian Flycatcher"
+    '''
+    spp = GAP_spp_code(species)
+    GAP = pd.read_csv(resultsDir + "GAP_spp_lc_cells.csv", header=0)
+    GAP_types = (GAP
+                 [lambda x: x['GAP_sp_code'] == spp]
+                 ['GAP_lc_code']
+                 .pipe(list))
+    return GAP_types
+
 def cross_to_GAP(species, crosswalk, print_tables=True):
     '''
     Gathers and matches WVBBA cover type associations to GAP types, assesses
     support for GAP associations in WVBBA data.
     '''
-
     # Return cover associations -------------------------------------------------------
     GAP_types = GAP_mapped_in(species)
     GAP_types = [str(x) for x in GAP_types]
@@ -48,7 +74,7 @@ def cross_to_GAP(species, crosswalk, print_tables=True):
               .set_index(['GAP_code'])
               [['GAP_name']]
               .drop_duplicates())
-    
+
     WVBBA_types = WVBBA_detected_in(species)
     WVBBA_types.index = [x.lower() for x in WVBBA_types.index]
     if print_tables == True:
@@ -74,14 +100,14 @@ def cross_to_GAP(species, crosswalk, print_tables=True):
     for code in WVBBA_types.index:
         detections = WVBBA_types.loc[code, 'detections']
         GAPs = (crosswalk[lambda x: x['wv_code_fine'] == code]
-                 ['GAP_code']
-                 .unique())
+                ['GAP_code']
+                .unique())
         GAPs = [str(int(x)) for x in GAPs]
         match_n = len(GAPs)
         if match_n != 0:
             for gap in GAPs:
                 confi = (crosswalk[(crosswalk['GAP_code'] == gap) &
-                              (crosswalk['wv_code_fine'] == code)]
+                        (crosswalk['wv_code_fine'] == code)]
                          ["confidence"]
                          .iloc[0])
                 name = (crosswalk[crosswalk['wv_code_fine'] == code]['wv_name_fine']
@@ -128,45 +154,17 @@ def cross_to_GAP(species, crosswalk, print_tables=True):
     valid_n = len(result_sp[result_sp['evaluation'] == 'valid'])
     print("{1} of {0} GAP ecological system associations were validated."
           "".format(GAP_n, valid_n))
-    
+
     # Deal with wv codes not matchable to GAP types
     GAPnan = (result_sp[result_sp['GAP_code'] == '0']
               .set_index(['wv_code_fine']))
-    
+
     # Pull out unmatched systems
     result_sp = result_sp[result_sp['GAP_code'] != '0']
     for nan in GAPnan.index:
         sp_unmatched[nan] = GAPnan.loc[nan, 'detections']
 
     return result_sp, GAP_linked, sp_unmatched, GAP_types, WVBBA_types
-
-def WVBBA_detected_in(species):
-    '''
-    Returns list of cover types WVBBA found species in.
-    '''
-    WV = pd.read_csv(resultsDir + "WV_spp_lc_detections.csv", header=0)
-    WV.replace('1"', '1')
-    spp = GAP_spp_code(species)
-    WV_types = (WV
-            [lambda x: x['species'] == spp[1:5]]
-            .T)
-    WV_types = (WV_types.rename(columns={WV_types.columns[0]: 'detections'})
-                .iloc[1:]
-                [lambda x: x['detections'] > 0])
-    return WV_types
-
-def GAP_mapped_in(species):
-    '''
-    Returns list of GAP land cover class codes species was mapped in.
-    Format species like "Acadian Flycatcher"
-    '''
-    spp = GAP_spp_code(species)
-    GAP = pd.read_csv(resultsDir + "GAP_spp_lc_cells.csv", header=0)
-    GAP_types = (GAP
-                 [lambda x: x['GAP_sp_code'] == spp]
-                 ['GAP_lc_code']
-                 .pipe(list))
-    return GAP_types
 
 def download_GAP_range_CONUS2001v1(gap_id, toDir):
     """
