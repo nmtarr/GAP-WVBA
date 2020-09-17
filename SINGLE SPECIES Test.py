@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# #  US Gap Analysis Project - WV Breeding Bird Atlas Data Comparison 
+# #  US Gap Analysis Project - WV Breeding Bird Atlas Data Comparison
 # Nathan Tarr and Jessie Jordan
-# 
+#
 # ## Cover type associations in West Virginia
-# We investigated the agreement between WV Breeding Bird Atlas (2011-2015) and USGS Gap Analysis Project data on 
+# We investigated the agreement between WV Breeding Bird Atlas (2011-2015) and USGS Gap Analysis Project data on
 
 # In[12]:
 
@@ -25,7 +25,7 @@ pd.set_option('display.max_rows', 400)
 pd.set_option('display.max_columns', 15)
 
 # Load land cover crosswalk - slow loading for some reason
-cross = pd.read_csv(fun.dataDir + "LandCover/land_cover_crosswalk.csv", header=0, dtype={'GAP_code': str}) 
+cross = pd.read_csv(fun.dataDir + "LandCover/land_cover_crosswalk.csv", header=0, dtype={'GAP_code': str})
 
 
 # In[14]:
@@ -66,7 +66,7 @@ print(unmatched)
 
 
 # Report and plot results for usable detections ------------------------------
-usable_df = pd.DataFrame(index=["Unusable", "Supported validation", "Supported addition", "Total detections"], 
+usable_df = pd.DataFrame(index=["Unusable", "Supported validation", "Supported addition", "Total detections"],
                          columns=["detections"])
 usable_df.loc['Supported validation', 'detections'] = int(df_valid[['detections']].sum())
 usable_df.loc['Supported addition', 'detections'] = int(df_add[['detections']].sum())
@@ -75,7 +75,7 @@ usable_df.loc['Unusable', 'detections'] = int(wv_types['detections'].sum() - df_
 usable_df = usable_df.fillna(0)
 print(usable_df)
 plt1 = usable_df.drop(['Total detections']).plot(y='detections', kind='pie',
-                                                 legend=False, 
+                                                 legend=False,
                                                  title = species + " Detections",
                                                  colors=['gray', 'g', 'y'])
 plt1.set_ylabel("")
@@ -92,4 +92,3 @@ eval_df.loc['Additions', "GAP_types"] = len(df_add)
 eval_df = eval_df.fillna(0)
 print(eval_df)
 plt2 = eval_df.plot(y='GAP_types', kind='barh', legend=False, title = species + " GAP associations")
-
