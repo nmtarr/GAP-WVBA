@@ -3,6 +3,8 @@
 Created on Wed Jul  8 10:39:19 2020
 
 @author: nmtarr
+
+development script behind species list comparison notebook.
 """
 import pandas as pd
 import repo_functions as fun 
