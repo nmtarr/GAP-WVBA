@@ -169,8 +169,9 @@ def cross_to_GAP(species, crosswalk, print_tables=True):
 
     GAP_n = len(GAP_types)
     valid_n = len(result_sp[result_sp['evaluation'] == 'valid'])
-    print("{1} of {0} GAP ecological system associations were validated."
-          "".format(GAP_n, valid_n))
+    if print_tables == True:
+        print("{1} of {0} GAP ecological system associations were validated."
+              "".format(GAP_n, valid_n))
 
     # Deal with wv codes not matchable to GAP types
     GAPnan = (result_sp[result_sp['GAP_code'] == '0']
