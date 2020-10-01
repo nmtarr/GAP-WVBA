@@ -19,36 +19,29 @@ def wv_lc_code_cleaner(code):
         code = code.lower().replace('"', '')
         return code
 
+
 def GAP_spp_code(name):
     '''
     Return the GAP species code for the common name provided.
     '''
-    code = (pd.read_csv(dataDir + "/SpeciesLists/WV_GAP_Atlas.csv", header=0)
+    code = (pd.read_csv(dataDir + "/SpeciesLists/WV_GAP_Atlas3.csv", header=0)
             [lambda x: x['strCommonName'] == name]
             ['strUC']
             .iloc[0])
     code = code[0] + code[1:5].upper() + code[5]
     return code
 
+
 def WVBBA_detected_in(species):
     '''
     Returns list of cover types WVBBA found species in.
     '''
-    '''WV = pd.read_csv(resultsDir + "WV_spp_lc_detections.csv", header=0)
-    spp = GAP_spp_code(species)
-    WV_types = (WV
-                [lambda x: x['species'] == spp[1:5]]
-                .T)
-    WV_types = (WV_types.rename(columns={WV_types.columns[0]: 'detections'})
-                .iloc[1:]
-                [lambda x: x['detections'] > 0])'''
     WV = pd.read_csv(resultsDir + "WV_spp_lc_detections.csv", header=0)
     WV.rename({'3A' : '3', '4A' : '4', '8A' : '8', '7C' : '7', '13A' : '13', 
            '16D' : '16', '18D' : '18','1"': '1', '1LA' : '1',
            '1"U': '1', '1LB': '1', '1B' : '1', '1M' : '1', '10A' : '10'}, axis=1, inplace=True)
     WV = WV.groupby(WV.columns, axis=1).sum()
     WV.replace(0,np.nan, inplace=True)
-
 
     spp = GAP_spp_code(species)
     WV_types = (WV
@@ -59,6 +52,7 @@ def WVBBA_detected_in(species):
            .iloc[:-1]
             [lambda x: x['detections'] > 0])
     return WV_types
+
 
 def GAP_mapped_in(species):
     '''
@@ -72,6 +66,7 @@ def GAP_mapped_in(species):
                  ['GAP_lc_code']
                  .pipe(list))
     return GAP_types
+
 
 def cross_to_GAP(species, crosswalk, print_tables=True):
     '''
@@ -214,14 +209,3 @@ def download_GAP_range_CONUS2001v1(gap_id, toDir):
 
     # Return path to range file without extension
     return rng_zip.replace('.zip', '')
-
-def lc_crosswalker(systems, fro, to):
-    """
-    Crosswalks a list of land cover classes from one classification to another.
-
-    Arguments
-    systems -- python list of system names
-    from -- classification system of systems list
-    to -- classification to crosswalk list to
-    """
-    #    return out_systems
