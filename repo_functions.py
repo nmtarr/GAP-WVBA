@@ -25,7 +25,7 @@ def GAP_spp_code(name):
     Return the GAP species code for the common name provided.
     '''
     code = (pd.read_csv(dataDir + "/SpeciesLists/WV_GAP_Atlas3.csv", header=0)
-            [lambda x: x['strCommonName'] == name]
+            [lambda x: x['common_name'] == name]
             ['strUC']
             .iloc[0])
     code = code[0] + code[1:5].upper() + code[5]
@@ -96,6 +96,8 @@ def cross_to_GAP(species, crosswalk, print_tables=True):
               [['wv_code_fine', 'wv_name_fine', 'detections']]
               .set_index(['wv_code_fine'])
               .drop_duplicates())
+        
+        
     # Which GAP types are linked to WVBBA associations? --------------------------
     '''
     Create a table with crosswalk info for the species
@@ -136,20 +138,25 @@ def cross_to_GAP(species, crosswalk, print_tables=True):
                        how='outer')
           .fillna(0))
     result_sp.index.name = 'GAP_code'
-    # Calculate a measure of support for the link
+    
+    
+    # Calculate a measure of support for the link -----------------------------
     result_sp["link_strength"] = result_sp["cross_confidence"]/result_sp["cross_matches"]
     result_sp.fillna(0, inplace=True)
+
 
     # Get names back in table ----------------------------------------------------
     names = crosswalk[['GAP_code', 'GAP_name']].drop_duplicates()
     result_sp = result_sp.merge(names, right_on='GAP_code', left_on='GAP_code',
                                 how='inner')
 
+
     # Categorize support ---------------------------------------------------------
     support_categories = ['low', 'med', 'high']
     bins = [0, 0.49, 0.80, 1]
     support = pd.cut(result_sp['link_strength'], bins, labels=support_categories)
     result_sp['support'] = support
+
 
     # Evaluations ----------------------------------------------------------------
     add = result_sp[(result_sp['support'] == 'high') &
@@ -178,6 +185,7 @@ def cross_to_GAP(species, crosswalk, print_tables=True):
         sp_unmatched[nan] = GAPnan.loc[nan, 'detections']
 
     return result_sp, GAP_linked, sp_unmatched, GAP_types, WVBBA_types
+
 
 def download_GAP_range_CONUS2001v1(gap_id, toDir):
     """
@@ -209,3 +217,34 @@ def download_GAP_range_CONUS2001v1(gap_id, toDir):
 
     # Return path to range file without extension
     return rng_zip.replace('.zip', '')
+
+
+def download_GAP_model_CONUS2001v1(gap_id, toDir):
+    """
+    Gets GAP habitat models as JSONs.  Pulls out summer NE and SE.  
+    Returns a list of dictionaries.
+    """
+    import sciencebasepy
+    import json
+    
+    # Connect
+    sb = sciencebasepy.SbSession()
+    
+    # Search for gap range item in ScienceBase
+    gap_id = gap_id[0] + gap_id[1:5].upper() + gap_id[5]
+    item_search = '{0}_CONUS_HabModel_2001v1.json'.format(gap_id)
+    items = sb.find_items_by_any_text(item_search)
+    
+    # Get a public item.  No need to log in.
+    mod =  items['items'][0]['id']
+    item_json = sb.get_item(mod)
+    get_files = sb.get_item_files(item_json, toDir)
+    
+    # Read in json file
+    models = json.load(open(toDir + gap_id + "_CONUS_HabModel_2001v1.json"))
+    models = [models["models"][gap_id + "-s6"], models["models"][gap_id + "-s3"]]
+    
+    if models[0]['ysnHandModel'] == True or models[1]['ysnHandModel'] == True:
+        print('handmodel')
+    else:
+        return models
