@@ -19,36 +19,29 @@ def wv_lc_code_cleaner(code):
         code = code.lower().replace('"', '')
         return code
 
+
 def GAP_spp_code(name):
     '''
     Return the GAP species code for the common name provided.
     '''
-    code = (pd.read_csv(dataDir + "/SpeciesLists/WV_GAP_Atlas.csv", header=0)
-            [lambda x: x['strCommonName'] == name]
+    code = (pd.read_csv(dataDir + "/SpeciesLists/WV_GAP_Atlas3.csv", header=0)
+            [lambda x: x['common_name'] == name]
             ['strUC']
             .iloc[0])
     code = code[0] + code[1:5].upper() + code[5]
     return code
 
+
 def WVBBA_detected_in(species):
     '''
     Returns list of cover types WVBBA found species in.
     '''
-    '''WV = pd.read_csv(resultsDir + "WV_spp_lc_detections.csv", header=0)
-    spp = GAP_spp_code(species)
-    WV_types = (WV
-                [lambda x: x['species'] == spp[1:5]]
-                .T)
-    WV_types = (WV_types.rename(columns={WV_types.columns[0]: 'detections'})
-                .iloc[1:]
-                [lambda x: x['detections'] > 0])'''
     WV = pd.read_csv(resultsDir + "WV_spp_lc_detections.csv", header=0)
     WV.rename({'3A' : '3', '4A' : '4', '8A' : '8', '7C' : '7', '13A' : '13', 
            '16D' : '16', '18D' : '18','1"': '1', '1LA' : '1',
            '1"U': '1', '1LB': '1', '1B' : '1', '1M' : '1', '10A' : '10'}, axis=1, inplace=True)
     WV = WV.groupby(WV.columns, axis=1).sum()
     WV.replace(0,np.nan, inplace=True)
-
 
     spp = GAP_spp_code(species)
     WV_types = (WV
@@ -59,6 +52,7 @@ def WVBBA_detected_in(species):
            .iloc[:-1]
             [lambda x: x['detections'] > 0])
     return WV_types
+
 
 def GAP_mapped_in(species):
     '''
@@ -72,6 +66,7 @@ def GAP_mapped_in(species):
                  ['GAP_lc_code']
                  .pipe(list))
     return GAP_types
+
 
 def cross_to_GAP(species, crosswalk, print_tables=True):
     '''
@@ -101,6 +96,8 @@ def cross_to_GAP(species, crosswalk, print_tables=True):
               [['wv_code_fine', 'wv_name_fine', 'detections']]
               .set_index(['wv_code_fine'])
               .drop_duplicates())
+        
+        
     # Which GAP types are linked to WVBBA associations? --------------------------
     '''
     Create a table with crosswalk info for the species
@@ -141,20 +138,25 @@ def cross_to_GAP(species, crosswalk, print_tables=True):
                        how='outer')
           .fillna(0))
     result_sp.index.name = 'GAP_code'
-    # Calculate a measure of support for the link
+    
+    
+    # Calculate a measure of support for the link -----------------------------
     result_sp["link_strength"] = result_sp["cross_confidence"]/result_sp["cross_matches"]
     result_sp.fillna(0, inplace=True)
+
 
     # Get names back in table ----------------------------------------------------
     names = crosswalk[['GAP_code', 'GAP_name']].drop_duplicates()
     result_sp = result_sp.merge(names, right_on='GAP_code', left_on='GAP_code',
                                 how='inner')
 
+
     # Categorize support ---------------------------------------------------------
     support_categories = ['low', 'med', 'high']
     bins = [0, 0.49, 0.80, 1]
     support = pd.cut(result_sp['link_strength'], bins, labels=support_categories)
     result_sp['support'] = support
+
 
     # Evaluations ----------------------------------------------------------------
     add = result_sp[(result_sp['support'] == 'high') &
@@ -169,8 +171,9 @@ def cross_to_GAP(species, crosswalk, print_tables=True):
 
     GAP_n = len(GAP_types)
     valid_n = len(result_sp[result_sp['evaluation'] == 'valid'])
-    print("{1} of {0} GAP ecological system associations were validated."
-          "".format(GAP_n, valid_n))
+    if print_tables == True:
+        print("{1} of {0} GAP ecological system associations were validated."
+              "".format(GAP_n, valid_n))
 
     # Deal with wv codes not matchable to GAP types
     GAPnan = (result_sp[result_sp['GAP_code'] == '0']
@@ -182,6 +185,7 @@ def cross_to_GAP(species, crosswalk, print_tables=True):
         sp_unmatched[nan] = GAPnan.loc[nan, 'detections']
 
     return result_sp, GAP_linked, sp_unmatched, GAP_types, WVBBA_types
+
 
 def download_GAP_range_CONUS2001v1(gap_id, toDir):
     """
@@ -214,13 +218,33 @@ def download_GAP_range_CONUS2001v1(gap_id, toDir):
     # Return path to range file without extension
     return rng_zip.replace('.zip', '')
 
-def lc_crosswalker(systems, fro, to):
-    """
-    Crosswalks a list of land cover classes from one classification to another.
 
-    Arguments
-    systems -- python list of system names
-    from -- classification system of systems list
-    to -- classification to crosswalk list to
+def download_GAP_model_CONUS2001v1(gap_id, toDir):
     """
-    #    return out_systems
+    Gets GAP habitat models as JSONs.  Pulls out summer NE and SE.  
+    Returns a list of dictionaries.
+    """
+    import sciencebasepy
+    import json
+    
+    # Connect
+    sb = sciencebasepy.SbSession()
+    
+    # Search for gap range item in ScienceBase
+    gap_id = gap_id[0] + gap_id[1:5].upper() + gap_id[5]
+    item_search = '{0}_CONUS_HabModel_2001v1.json'.format(gap_id)
+    items = sb.find_items_by_any_text(item_search)
+    
+    # Get a public item.  No need to log in.
+    mod =  items['items'][0]['id']
+    item_json = sb.get_item(mod)
+    get_files = sb.get_item_files(item_json, toDir)
+    
+    # Read in json file
+    models = json.load(open(toDir + gap_id + "_CONUS_HabModel_2001v1.json"))
+    models = [models["models"][gap_id + "-s6"], models["models"][gap_id + "-s3"]]
+    
+    if models[0]['ysnHandModel'] == True or models[1]['ysnHandModel'] == True:
+        print('handmodel')
+    else:
+        return models
