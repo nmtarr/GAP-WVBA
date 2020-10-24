@@ -26,7 +26,6 @@ Linking the two data sets allowed us to "translate" WVBBA data into the framewor
 
 
 ## Key Findings
-
 Some issues/barriers discovered
 * Invalid habitat codes were sometimes recorded
 * Cover types are inadequately defined.  As revealed by low cross walk confidence, and strange data (e.g., ACFL in "water").
