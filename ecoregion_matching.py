@@ -4,7 +4,7 @@ Created on Wed Oct  7 10:13:37 2020
 
 @author: Jessie Jordan
 
-Description: Clip and summarizes GAP_types to L4 ecoregions in WV
+Description: Clip and summarizes GAP_types to L3 ecoregions in WV
 NOTE: Code must be run in a Python 2.7 environment
 """
 
@@ -21,59 +21,40 @@ from arcpy.sa import *
 arcpy.CheckOutExtension("Spatial")
 arcpy.env.overwriteOutput = 1
 
-#Using Arc with Proj6 may or may not work due to permissions access, revisit if import fails
-#projDir = "C:/Users/jhpage/"
-valueRaster = fun.dataDir + "LandCover/WVworkspace/wvLC.tif"
-inputFC = fun.dataDir + "LandCover/WVworkspace/wv_eco.shp"
+
+in_class_data = fun.dataDir + "LandCover/WVworkspace/wvlc"
+in_zone_data = fun.dataDir + "LandCover/WVworkspace/wv_eco.shp"
 ##  new output database for tables, or gdb to be overwritten
-outputLoc = fun.dataDir + "LandCover/WVworkspace/ecoclip/"
-selectVal = "US_L3NAME"
-
+out_table = fun.dataDir + "LandCover/WVworkspace/ecoclip/wvlc_L3.dbf"
+out_table2 = fun.dataDir + "LandCover/WVworkspace/ecoclip/wvlc_ne.dbf"
+out_table3 = fun.dataDir + "LandCover/WVworkspace/ecoclip/wvlc_se.dbf"
 ##  set input value raster as snap raster
-arcpy.env.snapRaster = valueRaster
+arcpy.env.snapRaster = in_class_data
 
-##  make input feature class a feature layer, to access information
-##  and allow for selection of features by attribute or location
-arcpy.MakeFeatureLayer_management(inputFC,"polygonLayer")
+arcpy.sa.TabulateArea(in_class_data, "VALUE", 
+             in_zone_data, "US_L3CODE", out_table, 30)
+arcpy.TableToTable_conversion(out_table, 
+                              fun.dataDir + "LandCover/WVworkspace/ecoclip/", 
+                              "wvlc_L3.csv")
 
-##  create empty list variable to populate
-##  with uniqe IDs, based on values in "OBJECTID" 
-uniqueIDs = []
-##  create search cursor to access attribute table of input feature class
-sc = arcpy.SearchCursor("polygonLayer")
-##  advance search cursor to first row in table
-row = sc.next()
+arcpy.sa.TabulateArea(in_class_data, "VALUE", 
+             in_zone_data, "US_L4CODE", out_table2, 30)
+arcpy.TableToTable_conversion(out_table2, 
+                              fun.dataDir + "LandCover/WVworkspace/ecoclip/", 
+                              "wvlc_L4.csv")
 
-##  while there is still a row in the table to read
-while row:
-    ##  if the value in the "rteno" field is not in the
-    ##  list of uniqueIDs...
-    if row.getValue(selectVal) not in uniqueIDs:
-        uniqueIDs.append(row.getValue(selectVal))
-    row = sc.next()
 
-##  for each unique id...
-#####Code currently fails at Select by Attribute tool
-for uid in uniqueIDs:
-    print ('Creating Layer for ' + str(uid))
-    ##  select the polygon feature with the current id
-    arcpy.SelectLayerByAttribute_management("polygonLayer","NEW_SELECTION",
-                                            'US_L3NAME = ' + str(uid))
-    arcpy.Clip(valueRaster, "polygonLayer", (outputLoc + selectVal), "", 
-                                               "", "ClippingGeometry", "")
-
-##  move workspace to the output geodatabase of tables
-arcpy.env.workspace = outputLoc
-
-print "Merging tables..."
-##  create empty list of tables names for merging
-mergeList = []
-##  iterate through the tables in the workspace...
-for table in arcpy.ListTables():
-    ##  if that table is not already in mergeList...
-    if table not in mergeList:
-        ##  add it to mergeList
-        mergeList.append(table)
-
-##  merge the tables into a new table
-arcpy.Merge_management(mergeList,"CoverTablegfc2000")
+in_class_datane = fun.dataDir + "LandCover/WVworkspace/nelcclip"
+in_class_datase = fun.dataDir + "LandCover/WVworkspace/selcclip"
+in_zone_data2 = fun.dataDir + "LandCover/WVworkspace/wv_eco.shp"
+##  new output database for tables, or gdb to be overwritten
+arcpy.sa.TabulateArea(in_class_datane, "VALUE", 
+             in_zone_data2, "STATE_NAME", out_table2, 30)
+arcpy.TableToTable_conversion(out_table2, 
+                              fun.dataDir + "LandCover/WVworkspace/ecoclip/", 
+                              "wvlc_ne.csv")
+arcpy.sa.TabulateArea(in_class_datase, "VALUE", 
+             in_zone_data2, "STATE_NAME", out_table3, 30)
+arcpy.TableToTable_conversion(out_table3, 
+                              fun.dataDir + "LandCover/WVworkspace/ecoclip/", 
+                              "wvlc_se.csv")
