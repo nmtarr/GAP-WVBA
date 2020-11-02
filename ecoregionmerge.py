@@ -86,11 +86,19 @@ pointsDF.to_csv(fun.dataDir + "RegionMatching/WV_pc_site_spp.csv")
 
 
 ##Sum original point data and merge GIS output to pointdata (solves issue of dropped data)
-###Currently raising the following error: KeyError: 'block-point number' (likely needs space removed)
-WV_pc_site_spp = pd.read_excel(fun.dataDir + "WVBBA_DATA.xlsx", sheet_name="HABDATA_for_newCHART")
+###Error in joining habitat where the numbers are not repoted- creates dulplicate unjoined records
+##See file: RegionMatching/WV_spp_lc_site_detections.csv to see error, inflates unuseable records by over 10,000
+pointsDF = pd.read_csv(fun.dataDir + "RegionMatching/WV_pc_site_spp.csv", 
+                       dtype={'block-point number': str, 'habitat': str})
+pointsDF.rename(columns = {'block-point number' : 'block_point'}, inplace = True)
+pointsDF['habitat'].replace({' ' : np.nan}, inplace=True)
+WV_pc_site_spp = pd.read_excel(fun.dataDir + "WVBBA_DATA.xlsx", 
+                               sheet_name="HABDATA_for_newCHART", 
+                               dtype = {'block-point number': str, 'habitat': str})
+WV_pc_site_spp.rename(columns = {'block-point number' : 'block_point'}, inplace = True)
+WV_pc_site_spp['habitat'].fillna('NR', inplace=True)
 resultsCSV = fun.dataDir + "RegionMatching/WV_spp_lc_site_detections.csv"
 resultsCSV2 = fun.dataDir + "RegionMatching/WVspp_lc_site_detect_stack.csv"
-
 
 fillCols = {'0-<50m:0-3 min' : '0', '0-<50m:>3-5 min': '0', 
             '0-<50m:>5-10min': '0', 
@@ -105,11 +113,11 @@ pointList = WV_pc_site_spp[{'0-<50m:0-3 min','0-<50m:>3-5 min', '0-<50m:>5-10min
 pointList.fillna(fillCols, inplace=True)
 pointList = pointList.astype(int)
 WV_pc_site_spp['point_sum'] = pointList.sum(axis=1)
-pointsFULL = pd.merge(left = WV_pc_site_spp, right= pointsDF['NE_or_SE'], how='outer', 
-                    on=['block-point number','species', 
+pointsFULL = pd.merge(left = WV_pc_site_spp, right= pointsDF, how='outer', 
+                    on=['block_point','species', 
                             'habitat'],left_index=True)
-groupdf = pointsFULL.groupby(['block-point number','species', 
+groupdf = pointsFULL.groupby(['block_point','species', 
                             'habitat', 'NE_or_SE']).agg({'point_sum': ['sum']})
-unstackdf = groupdf.unstack(level=-1)
-unstackdf.to_csv(resultsCSV)
+unstackdf = groupdf.unstack(level=-1, fill_value= '0')
+pointsFULL.to_csv(resultsCSV)
 groupdf.to_csv(resultsCSV2)
