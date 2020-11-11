@@ -31,6 +31,15 @@ def GAP_spp_code(name):
     code = code[0] + code[1:5].upper() + code[5]
     return code
 
+def WVBBA_sp_code(name):
+    '''
+    Return the WV atlas species code for the common name provided.
+    '''
+    code = (pd.read_csv(dataDir + "/SpeciesLists/WV_GAP_Atlas3.csv", header=0)
+            [lambda x: x['common_name'] == name]
+            ['WV_code']
+            .iloc[0])
+    return code
 
 def WVBBA_detected_in(species):
     '''
