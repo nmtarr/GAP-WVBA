@@ -30,21 +30,22 @@ GAPlc_df = pd.DataFrame(columns=["GAPtype", "region1", "region2"],
 print(survey_df); print(site_df); print(cross_df); print(GAPlc_df)
 
 
+
+# assess a species ------------------------------------------
 # add columns that represent crosswalk at wv level
 df1 = pd.merge(GAPlc_df, cross_df, on=["GAPtype"], how="inner")
 print(df1)
 
-# assess a species ------------------------------------------
+
 sp = "sp1"
 region = "region1" # I think this may have to be done by region (looping)
 linked_types = set([])
 
 survey_df2 = survey_df[survey_df["species"] == sp]
 
-region = "region1"
 # pull together site and survey data -- that adds region columns
 df2 = pd.merge(survey_df2, site_df, on=["site"], how="left") 
-df2 = df2[df2[region] == 1]
+df2 = df2[df2[region] == 1] #ERROR???
 print(df2)
 
 # do the crosswalks by region
