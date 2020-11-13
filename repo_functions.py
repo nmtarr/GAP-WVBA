@@ -99,7 +99,8 @@ def cross_to_GAP(species, crosswalk, print_tables=True):
     if print_tables == True:
         print("\nSystem associations in the GAP model")
         print(GAP_types
-              .merge(crosswalk, left_index=True, right_on='GAP_code', how='inner')
+              .merge(crosswalk, left_index=True, right_on='GAP_code', 
+                     how='inner')
               [['GAP_code', 'GAP_name', 'GAP_associated']]
               .set_index(['GAP_code'])
               [['GAP_name']]
@@ -110,7 +111,8 @@ def cross_to_GAP(species, crosswalk, print_tables=True):
     if print_tables == True:
         print("\nWVBBA detections by WVBBA habitat type")
         print(WVBBA_types
-              .merge(crosswalk, left_index=True, right_on='wv_code_fine', how='inner')
+              .merge(crosswalk, left_index=True, right_on='wv_code_fine', 
+                     how='inner')
               [['wv_code_fine', 'wv_name_fine', 'detections']]
               .set_index(['wv_code_fine'])
               .drop_duplicates())
@@ -152,9 +154,9 @@ def cross_to_GAP(species, crosswalk, print_tables=True):
         else:
             sp_unmatched[code] = detections
 
-    result_sp = (GAP_types.merge(GAP_linked, left_index=True, right_index=True,
-                       how='outer')
-          .fillna(0))
+    result_sp = (GAP_types.merge(GAP_linked, left_index=True, 
+                                 right_index=True, how='outer')
+                 .fillna(0))
     result_sp.index.name = 'GAP_code'
     
     
@@ -165,14 +167,15 @@ def cross_to_GAP(species, crosswalk, print_tables=True):
 
     # Get names back in table ----------------------------------------------------
     names = crosswalk[['GAP_code', 'GAP_name']].drop_duplicates()
-    result_sp = result_sp.merge(names, right_on='GAP_code', left_on='GAP_code',
-                                how='inner')
+    result_sp = result_sp.merge(names, right_on='GAP_code', 
+                                left_on='GAP_code', how='inner')
 
 
     # Categorize support ---------------------------------------------------------
     support_categories = ['low', 'med', 'high']
     bins = [0, 0.49, 0.80, 1]
-    support = pd.cut(result_sp['link_strength'], bins, labels=support_categories)
+    support = pd.cut(result_sp['link_strength'], bins, 
+                     labels=support_categories)
     result_sp['support'] = support
 
 
