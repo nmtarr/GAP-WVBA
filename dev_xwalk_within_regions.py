@@ -13,13 +13,15 @@ import repo_functions as fun
 
 pd.set_option('display.width', 2000)
 pd.set_option('display.max_colwidth', 40)
-pd.set_option('display.max_rows', 60)
+pd.set_option('display.max_rows', 50)
 pd.set_option('display.max_columns', 10)
 
 
-# SET SPECIES & REGION -------------------------------------------------------
+# SET SPECIES & CUTOFF -------------------------------------------------------
 sp_name = "Common Yellowthroat"
 sp = fun.WVBBA_sp_code(sp_name)
+cutoff = 1.0 # Maximum percent of a cover types total acreage that can be in a 
+#              region and it still be considered absent in the region.           
 
 # LOAD TABLES ----------------------------------------------------------------
 # Land cover crosswalk
@@ -68,7 +70,6 @@ records are then grouped by habitat within regions and summed/tallied.
 
 # The function is look for some variables - assign to dummies for now
 regions=""
-cutoff = 0.5
 
 def xwalk_in_regions(df1):
     """
@@ -79,20 +80,13 @@ def xwalk_in_regions(df1):
     ----------
     df1 : data frame
         A data frame of detection tallies by wv cover cover type (fine).
-    regions : string
-        Column name of the regions to use in crosswalk
-    cutoff : float, optional
-        Cutoff in percent of pixels used to assign a cover type to a 
-        region. The default is 5.0.
 
     Returns
     -------
     df5 : data frame
-        Result of the crosswalk by region.
-    df6 : data frame
-        
+        Result of the crosswalk by region.        
     """
-    print(regions); print(cutoff)
+    print(regions)
     try:
         # Retrieve the region of the group.  Groupby object has regions as keys.
         rgn = df1[regions].unique()[0]
@@ -139,8 +133,7 @@ def xwalk_in_regions(df1):
 
 # MODELING REGIONS CROSSWALKS ------------------------------------------------
 regions="GAP_regions"
-cutoff = 5.0
-# ----------------------------------------------------------------------------
+
 # Tally number of detections by region and habitat type
 birds_sum = birds.groupby([regions, "habitat"]).sum().reset_index()
 birds_sum
@@ -153,20 +146,14 @@ out_df1 = detections_gb.apply(xwalk_in_regions)
 
 # Link strength could be different by region, take the max
 out_df2 = (out_df1[["regions", "GAP_code", "detections", "link_strength"]]
-           .groupby("GAP_code")
+           .groupby(["GAP_code"], as_index=False)
            .max())
+mod_region_output = out_df2.copy()
 
-# Categorize link strength as support
-support_categories = ['low', 'med', 'high']
-bins = [0, 0.49, 0.80, 1]
-out_df2['support'] = pd.cut(out_df2['link_strength'], bins, 
-                            labels=support_categories)
-mod_region_output = out_df2
 
 # LEVEL 3 ECOREGION CROSSWALKS -----------------------------------------------
 regions="Ecoregion3"
-cutoff = 5.0
-# ----------------------------------------------------------------------------
+
 # Tally number of detections by region and habitat type
 birds_sum = birds.groupby([regions, "habitat"]).sum().reset_index()
 birds_sum
@@ -179,20 +166,14 @@ out_df1 = detections_gb.apply(xwalk_in_regions)
 
 # Link strength could be different by region, take the max
 out_df2 = (out_df1[["regions", "GAP_code", "detections", "link_strength"]]
-           .groupby("GAP_code")
+           .groupby(["GAP_code"], as_index=False)
            .max())
+eco3_output = out_df2.copy()
 
-# Categorize link strength as support
-support_categories = ['low', 'med', 'high']
-bins = [0, 0.49, 0.80, 1]
-out_df2['support'] = pd.cut(out_df2['link_strength'], bins, 
-                            labels=support_categories)
-eco3_output = out_df2
 
 # LEVEL 4 ECOREGION CROSSWALKS -----------------------------------------------
 regions="Ecoregion4"
-cutoff = 5.0
-# ----------------------------------------------------------------------------
+
 # Tally number of detections by region and habitat type
 birds_sum = birds.groupby([regions, "habitat"]).sum().reset_index()
 birds_sum
@@ -205,17 +186,33 @@ out_df1 = detections_gb.apply(xwalk_in_regions)
 
 # Link strength could be different by region, take the max
 out_df2 = (out_df1[["regions", "GAP_code", "detections", "link_strength"]]
-           .groupby("GAP_code")
+           .groupby(["GAP_code"], as_index=False)
            .max())
+eco4_output = out_df2.copy()
+
+
+# CROSSWALK RESULT -----------------------------------------------------------
+df10 = pd.concat([mod_region_output, eco3_output, eco4_output])
+print(df10)
+
+
+# QUESTIONS ------------------------------------------------------------------
+# Choose the row with highest support -- how to adjust counts????????!!!!!!!!!!!!!
+df11 = df10.groupby(["GAP_code"], as_index=False).max()
 
 # Categorize link strength as support
-support_categories = ['low', 'med', 'high']
 bins = [0, 0.49, 0.80, 1]
-out_df2['support'] = pd.cut(out_df2['link_strength'], bins, 
-                            labels=support_categories)
-eco4_output = out_df2
+df11['support'] = pd.cut(df11['link_strength'], bins, 
+                            labels=['low', 'med', 'high'])
+
+# Filter out low or low and medium support
+####    RESUME WORK HERE ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-# RESULT ---------------------------------------------------------------------
-out_df = pd.concat([mod_region_output, eco3_output, eco4_output])
-print(out_df)
+# Find validations
+
+# Find additions
+
+# How many records were useful? - sum of validations and additions?
+
+# RESULTS --------------------------------------------------------------------
