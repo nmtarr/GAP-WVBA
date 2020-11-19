@@ -13,15 +13,16 @@ import repo_functions as fun
 
 pd.set_option('display.width', 2000)
 pd.set_option('display.max_colwidth', 40)
-pd.set_option('display.max_rows', 50)
+pd.set_option('display.max_rows', 70)
 pd.set_option('display.max_columns', 10)
 
 
-# SET SPECIES & CUTOFF -------------------------------------------------------
+# SET ARGUMENTS --------------------------------------------------------------
 sp_name = "Common Yellowthroat"
 sp = fun.WVBBA_sp_code(sp_name)
 cutoff = 1.0 # Maximum percent of a cover types total acreage that can be in a 
-#              region and it still be considered absent in the region.           
+#              region and it still be considered absent in the region. 
+min_link = 0.49         
 
 # LOAD TABLES ----------------------------------------------------------------
 # Land cover crosswalk
@@ -43,6 +44,8 @@ birds = (pd.read_csv(fun.dataDir + "WV_spp_lc_site_detections.csv")
                        "point_sum"], axis=1)
               .rename({"NE_or_SE": "GAP_regions", "US_L3CODE":"Ecoregion3",
                        "US_L4CODE": "Ecoregion4"}, axis=1))
+
+nbirds = birds.point_sum.sum()
 
 # ???? FILTER MORE HERE?  VERIFY NON DUPLICATES ETC.
 
@@ -198,12 +201,12 @@ print(df10)
 
 # QUESTIONS ------------------------------------------------------------------
 # Choose the row with highest support -- how to adjust counts????????!!!!!!!!!!!!!
-df11 = df10.groupby(["GAP_code"], as_index=False).max()
+#df11 = df10.groupby(["GAP_code"], as_index=False).max()
 
-# Categorize link strength as support
-bins = [0, 0.49, 0.80, 1]
-df11['support'] = pd.cut(df11['link_strength'], bins, 
-                            labels=['low', 'med', 'high'])
+# # Categorize link strength as support
+# bins = [0, 0.49, 0.80, 1]
+# df11['support'] = pd.cut(df11['link_strength'], bins, 
+#                             labels=['low', 'med', 'high'])
 
 # Filter out low or low and medium support
 ####    RESUME WORK HERE ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -216,3 +219,12 @@ df11['support'] = pd.cut(df11['link_strength'], bins,
 # How many records were useful? - sum of validations and additions?
 
 # RESULTS --------------------------------------------------------------------
+
+# Which unmatcheable codes were present
+
+print(unmatcheable)
+
+# How many total detections
+print(nbirds)
+
+# How many supported addition, supported validation, unusable
