@@ -66,13 +66,31 @@ This step pulls out records with unmatcheable habitat types (at the state
 level).  More unmatcheble records may occur in the regional crosswalk.  
 '''
 # Detections could have wv codes that are unmatcheable; pull them out
-unmatcheable = (pd.merge(birds, WV_xwalk, how="left", left_on="habitat",
+unmatcheable_0 = (pd.merge(birds, WV_xwalk, how="left", left_on="habitat",
                          right_on="wv_code_fine")
-                [lambda x: x["GAP_code"].isna() == True]
-                .filter(["habitat", "point_sum", "wv_code_fine"]))
+                  [lambda x: x["GAP_code"].isna() == True]
+                  .filter(["habitat", "point_sum", "wv_code_fine"])
+                  .groupby("habitat", as_index=False)
+                  .sum()
+                  .rename({"point_sum": "detections", 
+                           "habitat": "recorded_habitat"}, axis=1))
 
 # Exclude unmatcheable records from detections
-birds = birds[birds['habitat'].isin(unmatcheable['habitat']) == False]
+birds = birds[birds['habitat'].isin(unmatcheable_0['recorded_habitat']) == False]
+
+# CREATE RESULTS HOLDERS -----------------------------------------------------
+'''
+Below, groupby.apply() is used.  When output from the apply function is a 
+single data frame, the results can be automatically concatenated.  Here,
+the apply function generates multiple types of output that have to be collected
+in some sort of rounabout way.  These tables get filled out as the function
+is applied.
+'''
+unmatcheable_1 = unmatcheable_0.copy()
+unmatcheable_1["region_type"] = "state"
+unmatcheable_1["subregion"] = "WV"
+
+
 
 # CREATE CROSSWALKING FUNCTION -----------------------------------------------
 '''
@@ -84,7 +102,7 @@ records are then grouped by habitat within regions and summed/tallied.
 # The function will look for some variables - assign to dummies for now
 regions=""
 
-def xwalk_in_regions(df1):
+def xwalk_in_regions(df1, result):
     """
     Performs crosswalk of detections by habitat within regions.  Built for
     use in groupby.apply().
@@ -104,7 +122,6 @@ def xwalk_in_regions(df1):
         How many were unmatcheable.
         
     """
-    print(regions)
     try:
         # Retrieve the region of the group.  Groupby object has regions as keys.
         rgn = df1[regions].unique()[0]
@@ -125,12 +142,22 @@ def xwalk_in_regions(df1):
         df2 = pd.merge(rgn_xwalk, df1, how='right', right_on="habitat", 
                        left_on='wv_code_fine')
         
-        print("------- UNMATCHABLE IN REGION ---------")
-        print(df2[df2["GAP_code"].isna() == True])
+        unmatcheable_10 = (df2[df2["GAP_code"].isna() == True]
+                           .rename({"habitat": "recorded_habitat",
+                                    "point_sum": "detections", 
+                                    "GAP_regions": "subregion",
+                                    "Ecoregion3": "subregion",
+                                    "Ecoregion4": "subregion"}, axis=1)
+                           .drop(["GAP_code", "wv_code_fine", 
+                                  "confidence"], axis=1)
+                           .reset_index(drop=True)
+                           .rename({0: "subregion"}, axis=1)
+                           )
+        unmatcheable_10["region_type"] = regions
         
+        # Move forward with matcheable records
         df3 = (df2[df2["GAP_code"].isna() == False]
                .drop(["habitat", regions], axis=1))
-        print("----    Matcheable    ")
         
         # Determine number of links per system
         df4 = (df3[["GAP_code", "wv_code_fine"]]
@@ -148,8 +175,6 @@ def xwalk_in_regions(df1):
         
         # Add column to document region type
         df5["regions"] = regions
-        print("one-to-none; one-to-one; one-to-many")
-        print(df5)
         
         # GAP -> WV Assessment -----------------------------------------------
         '''
@@ -158,17 +183,14 @@ def xwalk_in_regions(df1):
         to a single GAP type have sufficient detections.
         Goal: what 
         '''
-        print("many-to-one")
         # Merge detections with lc crosswalk ("left" this time)
         #print("detections merged with xwalk")
         df20 = (pd.merge(rgn_xwalk, df1, how='left', right_on="habitat", 
                         left_on='wv_code_fine'))
-        #print(df20)
         
         # Get a df with # wv types linked to each GAP type in region
         # Also filter out GAP codes with 1 corresponding wv type; those are 
         # handled above.
-        #print("count wv types per GAP (filter > 1")
         df21 = (df20
                 .filter(["GAP_code", "habitat"], axis=1)
                 .groupby("GAP_code", as_index=False)
@@ -185,8 +207,6 @@ def xwalk_in_regions(df1):
                 .count()
                 .rename({"habitat": "wv_sufficient_count"}, axis=1)
                 )
-        #print("calculate sufficient links")
-        #print(df22)
         
         # Merge df's with count of potential links and count of sufficient
         # links
@@ -201,9 +221,43 @@ def xwalk_in_regions(df1):
         df25 = (pd.merge(df24, df3, how="left", on=["wv_code_fine",
                                                     "GAP_code", "confidence"])
                 [lambda x: x["point_sum"].isna() == False]
+                .rename({"point_sum": "detections"}, axis=1)
                 )
-        print(df25)
-        return df5, df25
+        df25["link_strength"] = df25["confidence"] * df25["proportion_sufficient"]
+        
+        # Combine the two result df (at this point) for further processing
+        #    remove records with insufficient link_strength
+        df30 = (pd.concat([df25[["GAP_code", "wv_code_fine", "link_strength",
+                                 "detections"]],
+                         df5[["GAP_code", "wv_code_fine", "link_strength",
+                              "detections"]]])
+                [lambda x: x["link_strength"] > min_link]
+                .drop(["link_strength"], axis=1)
+                )
+        
+        # Get a list of supported GAP_codes
+        supported_GAP_codes = (pd.DataFrame(df30["GAP_code"])
+                               .drop_duplicates()
+                               .reset_index(drop=True))
+        supported_GAP_codes["region_type"] = regions
+        supported_GAP_codes["subregion"] = rgn
+                
+        # Get table of wv codes, detection # that were supported
+        tally = (df30[["wv_code_fine", "detections"]]
+                 .drop_duplicates()
+                 .reset_index(drop=True)
+                 )
+        tally["region_type"] = regions
+        tally["subregion"] = rgn
+        
+        
+        if result == "nonmatches":
+            return unmatcheable_10
+        if result == "GAP_types":
+            return supported_GAP_codes
+        if result == "record_count":
+            return tally
+    
     except Exception as e:
         print(e)
 
@@ -213,19 +267,20 @@ regions="GAP_regions"
 
 # Tally number of detections by region and habitat type
 birds_sum = birds.groupby([regions, "habitat"]).sum().reset_index()
-birds_sum
 
 # Create grouped df based on region (create chunks based on region)
 detections_gb = birds_sum.groupby([regions], as_index=False)
 
 # Apply crosswalk function to groups
-out_gap_1 = detections_gb.apply(xwalk_in_regions)
-
-# # Link strength could be different by region, take the max
-# mod_region_output = (out_df1[["regions", "GAP_code", "detections", "link_strength"]]
-#                      .groupby(["GAP_code"], as_index=False)
-#                      .max())
-
+out_1 = (detections_gb.apply(xwalk_in_regions, result="GAP_types")
+             .reset_index(drop=True)
+             )
+out_2 = (detections_gb.apply(xwalk_in_regions, result="record_count")
+             .reset_index(drop=True)
+             )
+out_3 = (detections_gb.apply(xwalk_in_regions, result="nonmatches")
+             .reset_index(drop=True)
+             )
 
 
 # LEVEL 3 ECOREGION CROSSWALKS -----------------------------------------------
@@ -233,18 +288,20 @@ regions="Ecoregion3"
 
 # Tally number of detections by region and habitat type
 birds_sum = birds.groupby([regions, "habitat"]).sum().reset_index()
-birds_sum
 
-# Create grouped df based on region(create chunks based on region)
+# Create grouped df based on region (create chunks based on region)
 detections_gb = birds_sum.groupby([regions], as_index=False)
 
 # Apply crosswalk function to groups
-out_e3_1 = detections_gb.apply(xwalk_in_regions)
-
-# # Link strength could be different by region, take the max
-# eco3_output = (out_df1[["regions", "GAP_code", "detections", "link_strength"]]
-#                .groupby(["GAP_code"], as_index=False)
-#                .max())
+out_4 = (detections_gb.apply(xwalk_in_regions, result="GAP_types")
+             .reset_index(drop=True)
+             )
+out_5 = (detections_gb.apply(xwalk_in_regions, result="record_count")
+             .reset_index(drop=True)
+             )
+out_6 = (detections_gb.apply(xwalk_in_regions, result="nonmatches")
+             .reset_index(drop=True)
+             )
 
 
 # LEVEL 4 ECOREGION CROSSWALKS -----------------------------------------------
@@ -252,23 +309,20 @@ regions="Ecoregion4"
 
 # Tally number of detections by region and habitat type
 birds_sum = birds.groupby([regions, "habitat"]).sum().reset_index()
-birds_sum
 
-# Create grouped df based on region.
+# Create grouped df based on region (create chunks based on region)
 detections_gb = birds_sum.groupby([regions], as_index=False)
 
 # Apply crosswalk function to groups
-out_e41 = detections_gb.apply(xwalk_in_regions)
-'''
-# Link strength could be different by region, take the max
-# eco4_output = (out_df1[["regions", "GAP_code", "detections", "link_strength"]]
-#            .groupby(["GAP_code"], as_index=False)
-#            .max())
-
-
-# CROSSWALK RESULT -----------------------------------------------------------
-# df10 = pd.concat([mod_region_output, eco3_output, eco4_output])
-# print(df10)
+out_7 = (detections_gb.apply(xwalk_in_regions, result="GAP_types")
+             .reset_index(drop=True)
+             )
+out_8 = (detections_gb.apply(xwalk_in_regions, result="record_count")
+             .reset_index(drop=True)
+             )
+out_9 = (detections_gb.apply(xwalk_in_regions, result="nonmatches")
+             .reset_index(drop=True)
+             )
 
 
 # QUESTIONS ------------------------------------------------------------------
@@ -293,11 +347,21 @@ out_e41 = detections_gb.apply(xwalk_in_regions)
 # RESULTS --------------------------------------------------------------------
 
 # Which unmatcheable codes were present
+print("\tUnmatcheable")
+print(pd.concat([unmatcheable_1, out_3, out_6, out_9]))
 
-print(unmatcheable)
+# GAP types supported
+print("\tSupported GAP types")
+print(pd.concat([out_1, out_4, out_7]))
+
+# Tallies of usable records
+print("\tTallies of usable records")
+print(pd.concat([out_2, out_5, out_8]))
+
+
+
 
 # How many total detections
 print(nbirds)
 
 # How many supported addition, supported validation, unusable
-'''
