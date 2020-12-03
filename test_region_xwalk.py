@@ -10,13 +10,7 @@ import repo_functions as fun
 
 help(fun.regional_xwalk)
 
-a, b, c, d = fun.regional_xwalk(sp_name="Acadian Flycatcher", cutoff_lc=1.0, 
+a, b, c, d = fun.regional_xwalk(sp_name="Common Yellowthroat", cutoff_lc=1.0, 
                                 min_detections=1, min_link=0.49, 
                                 support_bins=[0, 0.49, 0.80, 1],
-                                print_tables=False)
-
-print(a)
-print(b)
-print(c)
-print(d)
-
+                                print_tables=True)

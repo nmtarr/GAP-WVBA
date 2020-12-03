@@ -147,11 +147,16 @@ def regional_xwalk(sp_name, cutoff_lc, min_detections, min_link, support_bins,
         
         # Survey sites and detections; filter out non-target species records
         birds = (pd.read_csv(dataDir + "WV_spp_lc_site_detections.csv")
-                      [lambda x: x['species'] == sp]
-                      .filter(["US_L4CODE", "US_L3CODE", "NE_or_SE", "habitat",
-                               "point_sum"], axis=1)
-                      .rename({"NE_or_SE": "GAP_regions", "US_L3CODE":"Ecoregion3",
-                               "US_L4CODE": "Ecoregion4"}, axis=1))
+                 .replace({"habitat": {'3A' : '3', '4A' : '4', '8A' : '8', 
+                                       '7C' : '7', '13A' : '13', '16D' : '16',
+                                       '18D' : '18','1"': '1', '1LA' : '1',
+                                       '1"U': '1', '1LB': '1', '1B' : '1', 
+                                       '1M' : '1', '10A' : '10'}})
+                 [lambda x: x['species'] == sp]
+                 .filter(["US_L4CODE", "US_L3CODE", "NE_or_SE", "habitat",
+                          "point_sum"], axis=1)
+                 .rename({"NE_or_SE": "GAP_regions", "US_L3CODE":"Ecoregion3",
+                          "US_L4CODE": "Ecoregion4"}, axis=1))
         
         nbirds = birds.point_sum.sum()
         
@@ -264,58 +269,62 @@ def regional_xwalk(sp_name, cutoff_lc, min_detections, min_link, support_bins,
                 df5["regions"] = regions
                  
             
-                # MANY-TO-ONE --------------------------------------------------------
-                '''
-                Handling 1 GAP to many WV (many-to-one) requires assessing in the 
-                other direction. This handles assessment of how many wv types linked 
-                to a single GAP type.
-                '''
-                # Merge detections with lc crosswalk (how="left" this time)
-                df20 = pd.merge(rgn_xwalk, df1, how='left', right_on="habitat", 
-                                 left_on='wv_code_fine')
+                # # MANY-TO-ONE --------------------------------------------------------
+                # '''
+                # REMOVE??????????????????????????????????????????????????????????????
+                # Handling 1 GAP to many WV (many-to-one) requires assessing in the 
+                # other direction. This handles assessment of how many wv types linked 
+                # to a single GAP type.
+                # '''
+                # # Merge detections with lc crosswalk (how="left" this time)
+                # df20 = pd.merge(rgn_xwalk, df1, how='left', right_on="habitat", 
+                #                  left_on='wv_code_fine')
                 
-                # Get a df with # wv types linked to each GAP type in region
-                # Also filter out GAP codes with 1 corresponding wv type; those are 
-                # handled above.
-                df21 = (df20
-                        .filter(["GAP_code", "habitat"], axis=1)
-                        .groupby("GAP_code", as_index=False)
-                        .count()
-                        .rename({"habitat": "wv_type_count"}, axis=1)
-                        [lambda x: x['wv_type_count'] > 1]
-                        )
+                # # Get a df with # wv types linked to each GAP type in region
+                # # Also filter out GAP codes with 1 corresponding wv type; those are 
+                # # handled above.
+                # df21 = (df20
+                #         .filter(["GAP_code", "habitat"], axis=1)
+                #         .groupby("GAP_code", as_index=False)
+                #         .count()
+                #         .rename({"habitat": "wv_type_count"}, axis=1)
+                #         [lambda x: x['wv_type_count'] > 1]
+                #         )
                
-                # Get a df with # wv types with enough detections linked to each GAP
-                df22 = (df20
-                        [lambda x: x["point_sum"] > min_detections]
-                        .filter(["GAP_code", "habitat"], axis=1)
-                        .groupby("GAP_code", as_index=False)
-                        .count()
-                        .rename({"habitat": "wv_sufficient_count"}, axis=1)
-                        )
+                # # Get a df with # wv types with enough detections linked to each GAP
+                # df22 = (df20
+                #         [lambda x: x["point_sum"] > min_detections]
+                #         .filter(["GAP_code", "habitat"], axis=1)
+                #         .groupby("GAP_code", as_index=False)
+                #         .count()
+                #         .rename({"habitat": "wv_sufficient_count"}, axis=1)
+                #         )
                 
-                # Merge df's with counts of potential and sufficient links
-                df23 = pd.merge(df22, df21, how="right", on="GAP_code")
-                df23["proportion_sufficient"] = df23.wv_sufficient_count/df23.wv_type_count
+                # # Merge df's with counts of potential and sufficient links
+                # df23 = pd.merge(df22, df21, how="right", on="GAP_code")
+                # df23["proportion_sufficient"] = df23.wv_sufficient_count/df23.wv_type_count
                 
-                # Get confidence and detections into the df
-                df24 = pd.merge(df23, rgn_xwalk, how="left", on="GAP_code")
+                # # Get confidence and detections into the df
+                # df24 = pd.merge(df23, rgn_xwalk, how="left", on="GAP_code")
                 
-                # Get detections (point_sum) into the df
-                df25 = (pd.merge(df24, df3, how="left", on=["wv_code_fine",
-                                                            "GAP_code", "confidence"])
-                        [lambda x: x["point_sum"].isna() == False]
-                        .rename({"point_sum": "detections"}, axis=1)
-                        )
-                df25["link_strength"] = df25["confidence"] * df25["proportion_sufficient"]
+                # # Get detections (point_sum) into the df
+                # df25 = (pd.merge(df24, df3, how="left", on=["wv_code_fine",
+                #                                             "GAP_code", "confidence"])
+                #         [lambda x: x["point_sum"].isna() == False]
+                #         .rename({"point_sum": "detections"}, axis=1)
+                #         )
+                # df25["link_strength"] = df25["confidence"] * df25["proportion_sufficient"]
+                # #  REMOVE above???????????????????????????????????????????????????????????
+                # # Combine the two result df (at this point) for further processing
+                # #    remove records with insufficient link_strength
+                # aaa = df25[["GAP_code", "wv_code_fine", "link_strength", "detections"]]
+                # bbb = df5[["GAP_code", "wv_code_fine", "link_strength", "detections"]]
+                # df30 = (pd.concat([aaa, bbb])
+                #         [lambda x: x["link_strength"] > min_link]
+                #         )
                 
-                # Combine the two result df (at this point) for further processing
-                #    remove records with insufficient link_strength
-                aaa = df25[["GAP_code", "wv_code_fine", "link_strength", "detections"]]
-                bbb = df5[["GAP_code", "wv_code_fine", "link_strength", "detections"]]
-                df30 = (pd.concat([aaa, bbb])
-                        [lambda x: x["link_strength"] > min_link]
-                        )
+                # Remove records with insufficient link strength
+                df30 = df5[df5["link_strength"] > min_link]
                 
                 # Get a list of supported GAP_codes
                 supported_GAP_codes = (df30[["GAP_code", "link_strength"]]
