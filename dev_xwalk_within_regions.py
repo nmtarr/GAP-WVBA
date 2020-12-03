@@ -399,17 +399,23 @@ def regional_xwalk(sp_name, cutoff_lc, min_detections, min_link, support_bins,
                                  (GAP_comp0['GAP_associated'] == 1.0)]
         GAP_comp0.loc[GAP_comp0.index.isin(nonvalidated.index) == True, 
                       'evaluation'] = 'unvalidated'
-        
+
         # Report result
         evaluations = (GAP_comp0
                        .merge(GAP_types2, left_on='GAP_code', right_on='GAP_code', 
                               how='left')
-                       .filter(["GAP_code", "GAP_name", "evaluation", "support"], 
+                       .filter(["GAP_code", "evaluation", "support"], 
                                axis=1)
                        .drop_duplicates()
                        )
         
-            
+        # Bring in names
+        names = WV_xwalk[["GAP_code", "GAP_name"]]
+        evaluations = (pd.merge(evaluations, names, how="left", on="GAP_code")
+                       .drop_duplicates()
+                       [["GAP_code", "GAP_name", "evaluation", "support"]]
+                       )
+        
         # RETURN RESULTS -------------------------------------------------------------
         if print_tables == True:
             print("\n\nEvaluations")
